@@ -1,6 +1,4 @@
-
-cat > index.html << 'EOF'
-[<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -143,11 +141,8 @@ body { background: #06080d; color: #e2e8f0; overflow-x: hidden; }
       </div>
     </div>
   </nav>
-  <div style="margin-top:56px;" class="max-w-7xl mx-auto px-4 py-4">]
-EOF
-
-cat >> index.html << 'EOF'
-[<!-- HOME -->
+  <div style="margin-top:56px;" class="max-w-7xl mx-auto px-4 py-4">
+<!-- HOME -->
     <div class="page active" id="page-home">
       <div class="flex gap-4">
         <div class="hidden lg:block w-60 flex-shrink-0 sidebar-desktop">
@@ -212,13 +207,147 @@ cat >> index.html << 'EOF'
           <div class="flex-1 overflow-y-auto scrollbar-thin p-3" id="msgBox"><div class="empty-chat">Select a conversation to start messaging</div></div>
           <div class="p-3 border-t border-gray-700/20 flex-shrink-0" id="msgInputWrap" style="display:none">
             <div class="relative"><textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea><div class="absolute right-3 top-1/2 -translate-y-1/2 hidden" id="secretBadge"></div></div>
-                 <button class="btn-primary w-full mt-4" onclick="createGroup()">Create Group</button>
+            <button class="btn-primary w-full mt-2 text-sm py-2.5" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="page-notifications"><div class="max-w-2xl mx-auto"><h2 class="text-xl font-bold text-white mb-4">Notifications</h2><div class="space-y-2" id="notifList"></div></div></div>
+    <div class="page" id="page-dating"><div class="max-w-4xl mx-auto"><div class="text-center mb-6"><h2 class="text-xl font-bold text-white">💕 Dating</h2><p class="text-gray-400 text-sm">Find people worldwide</p></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="datingGrid"></div></div></div>
+    <div class="page" id="page-profile">
+      <div class="max-w-3xl mx-auto">
+        <div class="glass-card rounded-xl overflow-hidden mb-4">
+          <div class="h-32 bg-gradient-to-r from-blue-700 to-purple-700 relative"><div class="absolute -bottom-12 left-4"><div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-4 border-gray-900 flex items-center justify-center text-2xl font-bold" id="profilePic">JD</div></div></div>
+          <div class="pt-14 pb-4 px-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">John Doe <span class="verified-icon">✓</span></h2>
+                <p class="text-gray-400 text-sm" id="profileExtra">@johndoe · 29 · San Francisco, CA</p>
+                <a href="https://johndoe.dev" class="text-blue-400 text-sm hover:underline mt-1 inline-block" id="profileWebsite">🌐 johndoe.dev</a>
+              </div>
+              <button class="btn-outline text-sm" onclick="navigateTo('edit-profile')">Edit</button>
+            </div>
+            <p class="text-gray-300 text-sm mt-2">Software developer & creator 🌍</p>
+            <div class="flex gap-4 mt-3"><div class="text-center"><p class="font-bold text-white text-sm">248</p><p class="text-xs text-gray-400">Posts</p></div><div class="text-center"><p class="font-bold text-white text-sm">1.2K</p><p class="text-xs text-gray-400">Friends</p></div><div class="text-center"><p class="font-bold text-white text-sm">856</p><p class="text-xs text-gray-400">Following</p></div></div>
+          </div>
+        </div>
+        <div id="profilePostsArea"></div>
+      </div>
+    </div>
+    <div class="page" id="page-view-profile">
+      <div class="max-w-3xl mx-auto">
+        <div class="glass-card rounded-xl overflow-hidden mb-4">
+          <div class="h-32 bg-gradient-to-r from-blue-700 to-purple-700 relative"><div class="absolute -bottom-12 left-4"><div class="w-24 h-24 rounded-full border-4 border-gray-900 flex items-center justify-center text-2xl font-bold text-white" id="viewProfilePic"></div></div></div>
+          <div class="pt-14 pb-4 px-4">
+            <div class="flex items-center justify-between">
+              <div><h2 class="text-xl font-bold text-white" id="viewProfileName"></h2><p class="text-gray-400 text-sm" id="viewProfileUser"></p><a href="#" class="text-blue-400 text-sm hover:underline mt-1 hidden" id="viewProfileWebsite"></a></div>              <div class="flex gap-2"><button class="btn-primary text-sm" id="viewProfileAddFriend" onclick="addFriendByName()">Add Friend</button><button class="btn-outline text-sm" id="viewProfileMsg" onclick="msgViewProfile()">Message</button></div>
+            </div>
+            <p class="text-gray-300 text-sm mt-2" id="viewProfileBio"></p>
+            <div class="flex gap-4 mt-3"><div class="text-center"><p class="font-bold text-white text-sm" id="viewPostsCount">0</p><p class="text-xs text-gray-400">Posts</p></div><div class="text-center"><p class="font-bold text-white text-sm" id="viewFriendsCount">0</p><p class="text-xs text-gray-400">Friends</p></div></div>
+          </div>
+        </div>
+        <div id="viewProfilePostsArea"></div>
+      </div>
+    </div>
+    <div class="page" id="page-edit-profile">
+      <div class="max-w-xl mx-auto">
+        <h2 class="text-xl font-bold text-white mb-4">Edit Profile</h2>
+        <div class="glass-card rounded-xl p-5 space-y-4">
+          <div class="flex items-center gap-3"><div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xl font-bold">JD</div><div><button class="btn-outline text-sm" onclick="document.getElementById('avatarUpload').click()">Change Photo</button><input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"></div></div>
+          <div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400 mb-1 block">First Name</label><input type="text" class="input-box" value="John"></div><div><label class="text-xs text-gray-400 mb-1 block">Last Name</label><input type="text" class="input-box" value="Doe"></div></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Username</label><input type="text" class="input-box" value="@johndoe"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Bio</label><textarea class="input-box" rows="2">Software developer & creator 🌍</textarea></div>
+          <div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400 mb-1 block">Age</label><input type="number" class="input-box" value="29" min="13" max="120"></div><div><label class="text-xs text-gray-400 mb-1 block">Date of Birth</label><input type="date" class="input-box" value="1995-03-15"></div></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Location</label><input type="text" class="input-box" value="San Francisco, CA"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Website <span class="text-yellow-400">(Verified only)</span></label><input type="text" class="input-box" value="johndoe.dev"><p class="text-[10px] text-gray-500 mt-1">Only verified users can display website</p></div>
+          <div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400 mb-1 block">Gender</label><select class="input-box"><option>Male</option><option>Female</option><option>Other</option></select></div><div><label class="text-xs text-gray-400 mb-1 block">Occupation</label><input type="text" class="input-box" placeholder="Developer"></div></div>
+          <button class="btn-primary w-full" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="page-verification">
+      <div class="max-w-xl mx-auto">
+        <div class="text-center mb-6"><div class="w-14 h-14 rounded-full bg-blue-600 mx-auto flex items-center justify-center mb-3"><span class="text-2xl">✓</span></div><h2 class="text-xl font-bold text-white">Get Verified</h2></div>
+        <div class="glass-card rounded-xl p-5 space-y-4">
+          <div><label class="text-xs text-gray-400 mb-1 block">Full Legal Name</label><input type="text" class="input-box"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Category</label><select class="input-box"><option>Creator</option><option>Business</option><option>Artist</option></select></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Why verified?</label><textarea class="input-box" rows="3"></textarea></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Upload ID</label><div class="border border-dashed border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500" onclick="document.getElementById('idUpload').click()"><p class="text-sm text-gray-400">Click to upload</p></div><input type="file" id="idUpload" style="display:none"></div>
+          <button class="btn-primary w-full" onclick="alert('Submitted!')">Submit</button>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="page-creator-hub">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-6"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 mx-auto flex items-center justify-center mb-3"><span class="text-2xl">🎬</span></div><h2 class="text-xl font-bold text-white">Creator Hub</h2><p class="text-gray-400 text-sm">Create exclusive content</p></div>
+        <div class="glass-card rounded-xl p-5 mb-4"><div class="grid grid-cols-3 gap-3 text-center"><div class="glass-light rounded-lg p-3"><p class="font-bold text-white">4.9%</p><p class="text-xs text-gray-400">Fee</p></div><div class="glass-light rounded-lg p-3"><p class="font-bold text-white">$5+</p><p class="text-xs text-gray-400">Min Price</p></div><div class="glass-light rounded-lg p-3"><p class="font-bold text-white">24hr</p><p class="text-xs text-gray-400">Payout</p></div></div></div>
+        <div class="glass-card rounded-xl p-5 space-y-4">
+          <h3 class="font-semibold text-white">Apply to Create</h3>
+          <div><label class="text-xs text-gray-400 mb-1 block">Brand Name</label><input type="text" class="input-box"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Category</label><select class="input-box"><option>Photography</option><option>Music</option><option>Fitness</option><option>Education</option></select></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Price (USD/mo)</label><input type="number" class="input-box" min="5"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Describe Content</label><textarea class="input-box" rows="3"></textarea></div>
+          <button class="btn-primary w-full" onclick="alert('Applied!')">Apply</button>
+        </div>
+      </div>    </div>
+    <div class="page" id="page-creators-follow"><div class="max-w-3xl mx-auto"><h2 class="text-xl font-bold text-white mb-4">Creators I Follow</h2><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="creatorsList"></div></div></div>
+    <div class="page" id="page-groups"><div class="max-w-4xl mx-auto"><div class="flex items-center justify-between mb-4"><h2 class="text-xl font-bold text-white">Group Chats</h2><button class="btn-primary text-sm" onclick="openCreateGroup()">+ Create Group</button></div><div id="groupsContent"></div></div></div>
+    <div class="page" id="page-group-chat">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-center gap-3 mb-4"><button class="chat-back-btn" onclick="navigateTo('groups')">← Back</button><h2 class="text-xl font-bold text-white" id="groupChatTitle">Group Chat</h2></div>
+        <div class="glass-card rounded-xl flex flex-col overflow-hidden" style="height:calc(100vh - 160px)">
+          <div class="p-3 border-b border-gray-700/20 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-sm font-bold flex-shrink-0" id="groupChatAvatar">GC</div><div><p class="font-semibold text-sm text-white" id="groupChatName"></p><p class="text-xs text-gray-400" id="groupChatMembers"></p></div></div>
+            <button class="btn-outline text-xs" id="groupSettingsBtn" onclick="openGroupSettings()">⚙️ Settings</button>
+          </div>
+          <div class="flex-1 overflow-y-auto scrollbar-thin p-3" id="groupMsgBox"></div>
+          <div class="p-3 border-t border-gray-700/20 flex-shrink-0"><div class="flex gap-2"><textarea class="msg-input flex-1" id="groupMsgInput" placeholder="Type in group..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendGroupMsg()}"></textarea><button class="btn-primary px-5 flex-shrink-0" onclick="sendGroupMsg()">Send</button></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="page-group-settings">
+      <div class="max-w-xl mx-auto">
+        <div class="flex items-center gap-3 mb-4"><button class="btn-outline text-sm" onclick="backToGroupChat()">← Back</button><h2 class="text-xl font-bold text-white">Group Settings</h2></div>
+        <div class="glass-card rounded-xl p-5 space-y-5">
+          <div><label class="text-xs text-gray-400 mb-1 block">Group Name</label><input type="text" class="input-box" id="settingsGroupName"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Group Tag</label><input type="text" class="input-box" id="settingsGroupTag"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Description</label><textarea class="input-box" rows="2" id="settingsGroupDesc"></textarea></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Members</label><div class="space-y-2" id="settingsMembersList"></div></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Add Member</label><div class="flex gap-2"><input type="text" class="input-box flex-1" id="addMemberInput" placeholder="@username"><button class="btn-primary text-sm" onclick="addGroupMember()">Add</button></div></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Join Link</label><div class="flex gap-2"><input type="text" class="input-box flex-1" id="groupJoinLink" readonly><button class="btn-outline text-sm" onclick="copyGroupLink()">Copy</button></div></div>
+          <div class="flex items-center justify-between"><div><p class="text-sm text-gray-300">Only admins can post</p><p class="text-xs text-gray-500">Restrict to admins</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" id="adminOnlyPost"><div class="w-10 h-5 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div>
+          <div class="flex gap-2 pt-2"><button class="btn-primary flex-1" onclick="saveGroupSettings()">Save</button><button class="btn-outline flex-1" style="border-color:rgba(239,68,68,0.4);color:#f87171" onclick="deleteGroup()">Delete</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="page-settings"><div class="max-w-xl mx-auto"><h2 class="text-xl font-bold text-white mb-4">Settings</h2><div class="space-y-3"><div class="glass-card rounded-xl p-4"><h3 class="font-semibold text-white text-sm mb-3">Account</h3><div class="space-y-3"><div class="flex items-center justify-between"><div><p class="text-sm text-gray-300">Email Notifications</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-700 rounded-full peer peer-checked:bg-blue-600peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div><div class="flex items-center justify-between"><div><p class="text-sm text-gray-300">Two-Factor Auth</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="w-10 h-5 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div></div></div></div></div></div>
+    <div id="createPostModal" style="display:none" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="glass rounded-xl w-full max-w-lg mx-4 p-5" style="max-height:90vh;overflow-y:auto">
+        <div class="flex items-center justify-between mb-4"><h3 class="font-semibold text-white">Create Post</h3><button class="text-gray-400 hover:text-white text-xl" onclick="closeCreatePost()">✕</button></div>
+        <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">JD</div><div><p class="font-semibold text-sm text-white">John Doe</p><p class="text-xs text-gray-400">🌍 Public</p></div></div>
+        <textarea class="input-box mb-4" rows="4" placeholder="What's on your mind?" id="newPostContent" style="min-height:80px"></textarea>
+        <div id="createPostPreview" style="display:none"></div>
+        <div class="flex gap-2 mb-4"><button class="action-btn flex-1 justify-center" onclick="document.getElementById('newPostImage').click()">📷 Photo</button><button class="action-btn flex-1 justify-center" onclick="document.getElementById('newPostVideo').click()">🎥 Video</button><button class="action-btn flex-1 justify-center" onclick="openFeelingPicker()">😊 Feeling</button></div>
+        <input type="file" id="newPostImage" accept="image/*" style="display:none" onchange="previewPostMedia(this, 'image')">
+        <input type="file" id="newPostVideo" accept="video/*" style="display:none" onchange="previewPostMedia(this, 'video')">
+        <div id="feelingPicker" style="display:none" class="glass-light rounded-lg p-3 mb-3 max-h-40 overflow-y-auto"><p class="text-xs text-gray-400 mb-2">How are you feeling?</p><div class="flex flex-wrap gap-2" id="feelingOptions"></div></div>
+        <button class="btn-primary w-full" onclick="publishPost()">Post</button>
+      </div>
+    </div>
+    <div id="createGroupModal" style="display:none" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="glass rounded-xl w-full max-w-lg mx-4 p-5">
+        <div class="flex items-center justify-between mb-4"><h3 class="font-semibold text-white">Create Group Chat</h3><button class="text-gray-400 hover:text-white text-xl" onclick="closeCreateGroup()">✕</button></div>
+        <div class="space-y-3">
+          <div><label class="text-xs text-gray-400 mb-1 block">Group Name</label><input type="text" class="input-box" id="newGroupName" placeholder="My group"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Group Tag</label><input type="text" class="input-box" id="newGroupTag" placeholder="#mygroup"></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Description</label><textarea class="input-box" rows="2" id="newGroupDesc"></textarea></div>
+          <div><label class="text-xs text-gray-400 mb-1 block">Members (comma separated)</label><input type="text" class="input-box" id="newGroupMembers" placeholder="@user1, @user2"></div>
+        </div>
+        <button class="btn-primary w-full mt-4" onclick="createGroup()">Create Group</button>
       </div>
     </div>
   </div>
 </div>
-EOF
-cat >> index.html << 'EOF'
 [<script>
 // const SUPABASE_URL = 'YOUR_PROJECT_URL';
 // const SUPABASE_KEY = 'YOUR_ANON_KEY';
@@ -305,9 +434,7 @@ function togglePostTool(tool) {
 }
 function selectInlineFeeling(f) { const d=document.getElementById('selectedFeelingDisplay'); if(d){d.classList.remove('hidden');d.querySelector('p').textContent=f;pendingFeeling=f;} }
 function clearPostTool() { document.getElementById('postToolArea').style.display='none'; document.getElementById('postToolArea').innerHTML=''; document.getElementById('photoBtn').classList.remove('active-tool'); document.getElementById('videoBtn').classList.remove('active-tool'); document.getElementById('feelingBtn').classList.remove('active-tool'); currentPostTool=null; pendingMedia=null; pendingFeeling=''; }]
-EOF
-cat >> index.html << 'EOF'
-[function openUserProfile(username,name,initials,grad,bio,postCount) {
+function openUserProfile(username,name,initials,grad,bio,postCount) {
   const friend=friends.find(f=>f.username===username);
   viewingProfile={username,name,initials,grad,bio:friend?friend.bio:bio,postCount,age:friend?friend.age:'',location:friend?friend.location:'',verified:friend?friend.verified:false,website:friend?friend.website:''};
   document.getElementById('viewProfilePic').className='w-24 h-24 rounded-full bg-gradient-to-br '+grad+' border-4 border-gray-900 flex items-center justify-center text-2xl font-bold text-white';
@@ -407,7 +534,7 @@ function addGroupMember() { const u=document.getElementById('addMemberInput').va
 function copyGroupLink() { const l=document.getElementById('groupJoinLink').value; navigator.clipboard.writeText(l).then(()=>alert('Copied!')).catch(()=>alert('Link: '+l)); }
 function saveGroupSettings() { if(!activeGroupChat)return; activeGroupChat.name=document.getElementById('settingsGroupName').value.trim(); activeGroupChat.tag=document.getElementById('settingsGroupTag').value.trim(); activeGroupChat.desc=document.getElementById('settingsGroupDesc').value.trim(); activeGroupChat.adminOnlyPost=document.getElementById('adminOnlyPost').checked; alert('Saved!'); openGroupChat(activeGroupChat.id); }function deleteGroup() { if(!activeGroupChat)return; if(confirm('Delete group?')){groups=groups.filter(g=>g.id!==activeGroupChat.id);activeGroupChat=null;renderGroups();navigateTo('groups');} }
 function handleAvatarUpload(input) { if(input.files&&input.files[0]){const r=new FileReader();r.onload=function(e){document.querySelectorAll('.bg-gradient-to-br.from-blue-500.to-purple-600').forEach(el=>{if(el.classList.contains('rounded-full')&&(el.textContent==='JD'||el.id==='profilePic')){el.style.backgroundImage='url('+e.target.result+')';el.style.backgroundSize='cover';el.textContent='';}});};r.readAsDataURL(input.files[0]);} }
-function saveProfile() { alert('Profile saved! ✅');navigateTo('profile'); }
+function saveProfile() { alert('Profile saved! ✅'); navigateTo('profile'); }
 function openCreatePost() { document.getElementById('createPostModal').style.display='flex'; document.getElementById('newPostContent').focus(); document.getElementById('createPostPreview').style.display='none'; document.getElementById('createPostPreview').innerHTML=''; document.getElementById('feelingPicker').style.display='none'; pendingMedia=null; pendingFeeling=''; }
 function closeCreatePost() { document.getElementById('createPostModal').style.display='none'; document.getElementById('createPostPreview').style.display='none'; document.getElementById('feelingPicker').style.display='none'; pendingMedia=null; pendingFeeling=''; }
 function previewPostMedia(input,type) { const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(e){const p=document.getElementById('createPostPreview'); p.style.display='block'; if(type==='image'){p.innerHTML=`<div class="relative"><img src="${e.target.result}" class="w-full rounded-xl" style="max-height:250px;object-fit:cover"><button class="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm" onclick="removePostMedia()">✕</button></div>`;}else{p.innerHTML=`<div class="relative"><video src="${e.target.result}" controls class="w-full rounded-xl" style="max-height:250px"></video><button class="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm" onclick="removePostMedia()">✕</button></div>`;} pendingMedia={type,url:e.target.result,name:f.name}; }; r.readAsDataURL(f); }
