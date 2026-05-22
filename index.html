@@ -2,552 +2,346 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sphere Lite</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
-body { background: #06080d; color: #e2e8f0; overflow-x: hidden; }
-.glass { background: rgba(15, 20, 35, 0.88); backdrop-filter: blur(20px); border: 1px solid rgba(59, 130, 246, 0.15); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-.glass-card { background: rgba(15, 20, 35, 0.7); border: 1px solid rgba(59, 130, 246, 0.12); }
-.btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; cursor: pointer; }
-.btn-primary:hover { opacity: 0.9; }
-.btn-outline { background: transparent; border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; border-radius: 10px; padding: 8px 18px; font-weight: 600; cursor: pointer; }
-.input-box { background: rgba(20, 25, 45, 0.6); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 10px; padding: 10px 14px; color: #e2e8f0; width: 100%; outline: none; }
-.input-box:focus { border-color: #3b82f6; }
-.nav-item { padding: 8px 14px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #94a3b8; transition: all 0.15s; position: relative; }
-.nav-item:hover, .nav-item.active { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
-.nav-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; background: #ef4444; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center; color: white; }
-.page { display: none; }
-.page.active { display: block; }
-.msg-bubble { max-width: 75%; padding: 10px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; margin-bottom: 6px; word-wrap: break-word; overflow-wrap: break-word; }
-.msg-sent { align-self: flex-end; background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border-bottom-right-radius: 4px; }
-.msg-received { align-self: flex-start; background: rgba(20, 25, 45, 0.8); color: #e2e8f0; border: 1px solid rgba(59, 130, 246, 0.1); border-bottom-left-radius: 4px; }
-.group-msg-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
-.group-msg-row.sent { flex-direction: row-reverse; }
-.group-msg-row .avatar-sm { flex-shrink: 0; margin-top: 2px; }
-.group-msg-row .msg-content { max-width: 75%; }
-.group-msg-row.sent .msg-content { display: flex; flex-direction: column; align-items: flex-end; }
-.group-msg-row .msg-bubble { margin-bottom: 4px; }
-.group-msg-row .msg-author { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
-.group-msg-row.sent .msg-author { text-align: right; }
-.group-msg-row .msg-time { font-size: 10px; color: #64748b; }
-.group-msg-row.sent .msg-time { text-align: right; }
-.comment-section { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(59,130,246,0.1); }
-.comment-section.show { display: block; }
-.dropdown-menu { display: none; position: absolute; top: calc(100% + 8px); right: 0; width: 280px; border-radius: 12px; padding: 6px; z-index: 100; }
-.dropdown-menu.show { display: block; }
-.dropdown-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #cbd5e1; }
-.dropdown-item:hover { background: rgba(37, 99, 235, 0.15); color: #60a5fa; }
-.action-btn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 16px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; background: rgba(20, 25, 45, 0.6); color: #94a3b8; border: 1px solid rgba(59, 130, 246, 0.08); }
-.action-btn:hover { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
-.action-btn.liked { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
-.action-btn.active-tool { background: rgba(37, 99, 235, 0.2); color: #60a5fa; border-color: rgba(37, 99, 235, 0.5); }
-.msg-input { width: 100%; min-height: 44px; max-height: 150px; background: rgba(20, 25, 45, 0.6); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 22px; padding: 10px 45px 10px 18px; color: #e2e8f0; font-size: 14px; resize: none; outline: none; line-height: 1.4; }
-.msg-input:focus { border-color: #3b82f6; }
-.lock-overlay { position: absolute; inset: 0; background: rgba(6, 8, 13, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 16px; z-index: 5; }
-.online-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; border: 2px solid #06080d; position: absolute; bottom: 6px; right: 6px; }.scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 3px; }
-.signup-bg { background: #06080d; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-.avatar-sm { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; cursor: pointer; flex-shrink: 0; }
-.verified-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; background: #3b82f6; border-radius: 50%; font-size: 7px; color: white; }
-.messages-layout { display: flex; height: calc(100vh - 108px); gap: 0; overflow: hidden; }
-.msg-sidebar { width: 100%; display: flex; flex-direction: column; flex-shrink: 0; }
-.msg-chat-area { width: 100%; display: none; flex-direction: column; }
-@media (min-width: 768px) { .messages-layout { flex-direction: row; } .msg-sidebar { width: 320px; max-width: 320px; border-right: 1px solid rgba(59,130,246,0.1); } .msg-chat-area { display: flex !important; width: calc(100% - 320px); } }
-.msg-chat-area.active { display: flex !important; width: 100%; }
-.chat-back-btn { display: flex; align-items: center; gap: 4px; cursor: pointer; color: #60a5fa; font-size: 14px; font-weight: 600; padding: 8px 16px; border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; }
-@media (min-width: 768px) { .chat-back-btn { display: none; } }
-.empty-chat { display: flex; align-items: center; justify-content: center; height: 100%; color: #475569; font-size: 14px; }
-@media (max-width: 768px) { .nav-item span { display: none; } .sidebar-desktop { display: none !important; } }
-.post-content-text { overflow: hidden; transition: max-height 0.3s ease; }
-.post-content-text.collapsed { max-height: 3.6em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-.post-content-text.expanded { max-height: 5000px; display: block; }
-.read-more-btn { color: #60a5fa; cursor: pointer; font-size: 13px; font-weight: 500; margin-top: 4px; display: inline-block; }
-.read-more-btn:hover { text-decoration: underline; }
-#loadingScreen { position: fixed; inset: 0; background: #06080d; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
-#loadingScreen.fade-out { opacity: 0; pointer-events: none; }
-.loading-logo { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 40px; animation: logoPulse 1.5s ease-in-out infinite; box-shadow: 0 0 40px rgba(37, 99, 235, 0.4); }
-@keyframes logoPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(37, 99, 235, 0.4); } 50% { transform: scale(1.08); box-shadow: 0 0 60px rgba(37, 99, 235, 0.6); } }
-.loading-dots { display: flex; gap: 10px; margin-top: 30px; }
-.loading-dots span { width: 12px; height: 12px; border-radius: 50%; background: #2563eb; animation: dotBounce 1.4s ease-in-out infinite; }
-.loading-dots span:nth-child(1) { animation-delay: 0s; }
-.loading-dots span:nth-child(2) { animation-delay: 0.15s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.3s; }
-.loading-dots span:nth-child(4) { animation-delay: 0.45s; }
-.loading-dots span:nth-child(5) { animation-delay: 0.6s; }
-@keyframes dotBounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
-.loading-text { color: #64748b; font-size: 13px; margin-top: 20px; letter-spacing: 1px; }
+*{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif}
+body{background:#06080d;color:#e2e8f0}
+.glass{background:rgba(15,20,35,0.88);backdrop-filter:blur(20px);border:1px solid rgba(59,130,246,0.15)}
+.page{display:none}.page.active{display:block}
+#loadingScreen{position:fixed;inset:0;background:#06080d;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.loading-logo{font-size:40px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+.loading-dots{display:flex;gap:8px;margin-top:20px}
+.loading-dots span{width:10px;height:10px;background:#2563eb;border-radius:50%;animation:bounce 1.4s infinite}
+@keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.6}40%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
 <div id="loadingScreen">
-  <div class="loading-logo">🌐</div>
-  <div class="loading-dots"><span></span><span></span><span></span><span></span><span></span></div>
-  <p class="loading-text">Sphere Lite</p>
+<div class="loading-logo">🌐</div>
+<div class="loading-dots"><span></span><span></span><span></span><span></span><span></span></div>
+<p class="text-gray-500 mt-4">Sphere Lite</p>
 </div>
-<div id="signupPage" class="signup-bg" style="display:none;">
-  <div class="w-full max-w-md px-6">
-    <div class="text-center mb-8">
-      <div class="text-5xl mb-3">🌐</div>
-      <h1 class="text-3xl font-bold text-white mb-1">Sphere Lite</h1>
-      <p class="text-gray-500 text-sm">by <span class="text-blue-400">OmniSphere Labs</span></p>
-    </div>
-    <div class="glass-card rounded-2xl p-6">
-      <h2 class="text-lg font-semibold text-white mb-5">Create your account</h2>      <div class="space-y-3">
-        <div class="flex gap-3"><input type="text" class="input-box" placeholder="First name" id="signupFirst"><input type="text" class="input-box" placeholder="Last name" id="signupLast"></div>
-        <input type="text" class="input-box" placeholder="Username" id="signupUsername">
-        <input type="email" class="input-box" placeholder="Email" id="signupEmail">
-        <input type="password" class="input-box" placeholder="Password" id="signupPassword">
-        <input type="password" class="input-box" placeholder="Confirm password" id="signupConfirm">
-      </div>
-      <button class="btn-primary w-full mt-5" onclick="handleSignup()">Sign Up</button>
-      <p class="text-center mt-3 text-sm text-gray-500">Already have an account? <span class="text-blue-400 cursor-pointer" onclick="handleSignup()">Log in</span></p>
-    </div>
-  </div>
+<div id="signupPage" style="display:none;">
+<div class="w-full max-w-md mx-auto mt-20 px-4">
+<div class="text-center mb-8"><div class="text-5xl mb-3">🌐</div><h1 class="text-3xl font-bold text-white">Sphere Lite</h1></div>
+<div class="glass rounded-2xl p-6">
+<h2 class="text-lg font-semibold text-white mb-5">Sign Up</h2>
+<input type="text" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg mb-3" placeholder="Email" id="email">
+<input type="password" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg mb-4" placeholder="Password" id="password">
+<button class="w-full bg-blue-600 text-white p-3 rounded-lg" onclick="handleSignup()">Sign Up</button>
+</div>
+</div>
 </div>
 <div id="mainApp" style="display:none;">
-  <nav class="fixed top-0 left-0 right-0 z-50 glass" style="height:56px;">
-    <div class="max-w-7xl mx-auto px-3 h-full flex items-center justify-between">
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <div class="flex items-center gap-1.5 cursor-pointer" onclick="navigateTo('home')">
-          <span class="text-xl leading-none">🌐</span>
-          <span class="text-base font-bold bg-gradient-to-r from-blue-400 to-blue-200 bg-clip-text text-transparent">Sphere Lite</span>
-        </div>
-      </div>
-      <div class="flex items-center gap-1">
-        <div class="nav-item active" onclick="navigateTo('home')" id="nav-home"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg><span class="hidden sm:inline">Home</span></div>
-        <div class="nav-item" onclick="navigateTo('friends')" id="nav-friends"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span class="hidden sm:inline">Friends</span></div>
-        <div class="nav-item" onclick="navigateTo('messages')" id="nav-messages"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span class="hidden sm:inline">Messages</span><span class="nav-badge">3</span></div>
-        <div class="nav-item" onclick="navigateTo('notifications')" id="nav-notifications"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg><span class="hidden sm:inline">Alerts</span><span class="nav-badge">5</span></div>
-      </div>
-      <div class="relative flex items-center gap-2 flex-shrink-0">
-        <div class="text-gray-500 text-[10px] hidden xl:block leading-none">OmniSphere Labs</div>
-        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 cursor-pointer flex items-center justify-center text-xs font-bold flex-shrink-0" onclick="toggleDropdown()" id="profileAvatar">JD</div>
-        <div class="dropdown-menu glass" id="profileDropdown">
-          <div class="flex items-center gap-2 p-2 mb-1"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">JD</div><div><p class="font-semibold text-white text-sm">John Doe</p><p class="text-xs text-gray-400">@johndoe</p></div></div>
-          <div class="dropdown-item" onclick="navigateTo('profile')">👤 My Profile</div>
-          <div class="dropdown-item" onclick="navigateTo('edit-profile')">✏️ Edit Profile</div>
-          <div class="dropdown-item" onclick="navigateTo('dating')">💕 Dating</div>
-          <div class="dropdown-item" onclick="navigateTo('creator-hub')">🎬 Creator Hub</div>
-          <div class="dropdown-item" onclick="navigateTo('creators-follow')">⭐ Creators I Follow</div>
-          <div class="dropdown-item" onclick="navigateTo('groups')">👥 Group Chats</div>
-          <div class="dropdown-item" onclick="navigateTo('verification')">✓ Get Verified</div>
-          <div class="dropdown-item" onclick="navigateTo('settings')">⚙️ Settings</div>
-          <div class="dropdown-item" style="color:#f87171" onclick="handleLogout()">🚪 Log Out</div>
-        </div>
-      </div>
-    </div>
-  </nav>
-  <div style="margin-top:56px;" class="max-w-7xl mx-auto px-4 py-4">
-<!-- HOME -->
-    <div class="page active" id="page-home">
-      <div class="flex gap-4">
-        <div class="hidden lg:block w-60 flex-shrink-0 sidebar-desktop">
-          <div class="glass-card rounded-xl p-4 sticky top-16">
-            <div class="flex items-center gap-2 mb-4"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">JD</div><div><p class="font-semibold text-sm text-white">John Doe</p><p class="text-xs text-gray-400">@johndoe</p></div></div>
-            <div class="space-y-1">
-              <div class="nav-item active" onclick="navigateTo('home')"> Feed</div>
-              <div class="nav-item" onclick="navigateTo('profile')">👤 Profile</div>
-              <div class="nav-item" onclick="navigateTo('friends')">👥 Friends</div>
-              <div class="nav-item" onclick="navigateTo('dating')">💕 Dating</div>
-              <div class="nav-item" onclick="navigateTo('creator-hub')">🎬 Creator Hub</div>
-              <div class="nav-item" onclick="navigateTo('creators-follow')">⭐ Creators Following</div>
-              <div class="nav-item" onclick="navigateTo('groups')">💬 Groups</div>
-            </div>
-          </div>
-        </div>
-        <div class="flex-1 max-w-xl mx-auto w-full">
-          <div class="glass-card rounded-xl p-4 mb-4">
-            <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">JD</div><button class="input-box flex-1 text-left cursor-pointer text-gray-400 text-sm" onclick="openCreatePost()">What's on your mind?</button></div>
-            <div class="flex gap-2">
-              <button class="action-btn flex-1 justify-center" id="photoBtn" onclick="togglePostTool('photo')">📷 Photo</button>
-              <button class="action-btn flex-1 justify-center" id="videoBtn" onclick="togglePostTool('video')">🎥 Video</button>
-              <button class="action-btn flex-1 justify-center" id="feelingBtn" onclick="togglePostTool('feeling')">😊 Feeling</button>
-            </div>
-            <div id="postToolArea" class="mt-3" style="display:none"></div>
-          </div>
-          <div id="feedContainer"></div>
-        </div>
-        <div class="hidden lg:block w-60 flex-shrink-0 sidebar-desktop">
-          <div class="glass-card rounded-xl p-4 sticky top-16">
-            <h3 class="font-semibold text-sm text-gray-300 mb-3">Online Friends</h3>
-            <div class="space-y-2" id="onlineFriendsList"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="page" id="page-friends">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-xl font-bold text-white mb-4">Friends</h2>
-        <div class="flex gap-2 mb-5 flex-wrap">
-          <button class="action-btn active" id="friendsAllBtn" onclick="showFriendsTab('all')">All Friends</button>
-          <button class="action-btn" id="friendsReqBtn" onclick="showFriendsTab('requests')">Requests</button>
-          <button class="action-btn" id="friendsSugBtn" onclick="showFriendsTab('suggestions')">Suggestions</button>
-        </div>
-        <div id="friendsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-      </div>
-    </div>
-    <div class="page" id="page-messages">
-      <div class="messages-layout glass-card rounded-xl overflow-hidden">        <div class="msg-sidebar" id="msgSidebar">
-          <div class="p-3 border-b border-gray-700/20"><h3 class="font-semibold text-sm text-white mb-2">Chats</h3><input type="text" class="input-box text-sm py-1.5" placeholder="Search..." oninput="filterConversations(this.value)"></div>
-          <div class="flex-1 overflow-y-auto scrollbar-thin" id="convList"></div>
-        </div>
-        <div class="msg-chat-area" id="msgChatArea">
-          <div class="p-3 border-b border-gray-700/20 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-2">
-              <div class="chat-back-btn" onclick="closeChatView()">← Back</div>
-              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold flex-shrink-0" id="chatAvatar">SM</div>
-              <div><p class="font-semibold text-sm text-white" id="chatName">Select chat</p><p class="text-xs text-green-400" id="chatStatus"></p></div>
-            </div>
-            <div class="flex gap-1 flex-shrink-0"><button class="action-btn p-1.5 text-xs" onclick="toggleVoice()">🎤</button><button class="action-btn p-1.5 text-xs" onclick="uploadFile()">📎</button><button class="action-btn p-1.5 text-xs" onclick="toggleSecret()">👁️</button></div>
-          </div>
-          <div class="flex-1 overflow-y-auto scrollbar-thin p-3" id="msgBox"><div class="empty-chat">Select a conversation to start messaging</div></div>
-          <div class="p-3 border-t border-gray-700/20 flex-shrink-0" id="msgInputWrap" style="display:none">
-            <div class="relative"><textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea><div class="absolute right-3 top-1/2 -translate-y-1/2 hidden" id="secretBadge"></div></div>
-            <button class="btn-primary w-full mt-2 text-sm py-2.5" onclick="sendMessage()">Send</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="page" id="page-notifications"><div class="max-w-2xl mx-auto"><h2 class="text-xl font-bold text-white mb-4">Notifications</h2><div class="space-y-2" id="notifList"></div></div></div>
-    <div class="page" id="page-dating"><div class="max-w-4xl mx-auto"><div class="text-center mb-6"><h2 class="text-xl font-bold text-white">💕 Dating</h2><p class="text-gray-400 text-sm">Find people worldwide</p></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="datingGrid"></div></div></div>
-    <div class="page" id="page-profile">
-      <div class="max-w-3xl mx-auto">
-        <div class="glass-card rounded-xl overflow-hidden mb-4">
-          <div class="h-32 bg-gradient-to-r from-blue-700 to-purple-700 relative"><div class="absolute -bottom-12 left-4"><div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-4 border-gray-900 flex items-center justify-center text-2xl font-bold" id="profilePic">JD</div></div></div>
-          <div class="pt-14 pb-4 px-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">John Doe <span class="verified-icon">✓</span></h2>
-                <p class="text-gray-400 text-sm" id="profileExtra">@johndoe · 29 · San Francisco, CA</p>
-                <a href="https://johndoe.dev" class="text-blue-400 text-sm hover:underline mt-1 inline-block" id="profileWebsite">🌐 johndoe.dev</a>
-              </div>
-              <button class="btn-outline text-sm" onclick="navigateTo('edit-profile')">Edit</button>
-            </div>
-            <p class="text-gray-300 text-sm mt-2">Software developer & creator 🌍</p>
-            <div class="flex gap-4 mt-3"><div class="text-center"><p class="font-bold text-white text-sm">248</p><p class="text-xs text-gray-400">Posts</p></div><div class="text-center"><p class="font-bold text-white text-sm">1.2K</p><p class="text-xs text-gray-400">Friends</p></div><div class="text-center"><p class="font-bold text-white text-sm">856</p><p class="text-xs text-gray-400">Following</p></div></div>
-          </div>
-        </div>
-        <div id="profilePostsArea"></div>
-      </div>
-    </div>
-    <div class="page" id="page-view-profile">
-      <div class="max-w-3xl mx-auto">
-        <div class="glass-card rounded-xl overflow-hidden mb-4">
-          <div class="h-32 bg-gradient-to-r from-blue-700 to-purple-700 relative"><div class="absolute -bottom-12 left-4"><div class="w-24 h-24 rounded-full border-4 border-gray-900 flex items-center justify-center text-2xl font-bold text-white" id="viewProfilePic"></div></div></div>
-          <div class="pt-14 pb-4 px-4">
-            <div class="flex items-center justify-between">
-              <div><h2 class="text-xl font-bold text-white" id="viewProfileName"></h2><p class="text-gray-400 text-sm" id="viewProfileUser"></p><a href="#" class="text-blue-400 text-sm hover:underline mt-1 hidden" id="viewProfileWebsite"></a></div>              <div class="flex gap-2"><button class="btn-primary text-sm" id="viewProfileAddFriend" onclick="addFriendByName()">Add Friend</button><button class="btn-outline text-sm" id="viewProfileMsg" onclick="msgViewProfile()">Message</button></div>
-            </div>
-            <p class="text-gray-300 text-sm mt-2" id="viewProfileBio"></p>
-            <div class="flex gap-4 mt-3"><div class="text-center"><p class="font-bold text-white text-sm" id="viewPostsCount">0</p><p class="text-xs text-gray-400">Posts</p></div><div class="text-center"><p class="font-bold text-white text-sm" id="viewFriendsCount">0</p><p class="text-xs text-gray-400">Friends</p></div></div>
-          </div>
-        </div>
-        <div id="viewProfilePostsArea"></div>
-      </div>
-    </div>
-    <div class="page" id="page-edit-profile">
-      <div class="max-w-xl mx-auto">
-        <h2 class="text-xl font-bold text-white mb-4">Edit Profile</h2>
-        <div class="glass-card rounded-xl p-5 space-y-4">
-          <div class="flex items-center gap-3"><div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xl font-bold">JD</div><div><button class="btn-outline text-sm" onclick="document.getElementById('avatarUpload').click()">Change Photo</button><input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"></div></div>
-          <div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400 mb-1 block">First Name</label><input type="text" class="input-box" value="John"></div><div><label class="text-xs text-gray-400 mb-1 block">Last Name</label><input type="text" class="input-box" value="Doe"></div></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Username</label><input type="text" class="input-box" value="@johndoe"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Bio</label><textarea class="input-box" rows="2">Software developer & creator 🌍</textarea></div>
-          <div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400 mb-1 block">Age</label><input type="number" class="input-box" value="29" min="13" max="120"></div><div><label class="text-xs text-gray-400 mb-1 block">Date of Birth</label><input type="date" class="input-box" value="1995-03-15"></div></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Location</label><input type="text" class="input-box" value="San Francisco, CA"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Website <span class="text-yellow-400">(Verified only)</span></label><input type="text" class="input-box" value="johndoe.dev"><p class="text-[10px] text-gray-500 mt-1">Only verified users can display website</p></div>
-          <div class="grid grid-cols-2 gap-3"><div><label class="text-xs text-gray-400 mb-1 block">Gender</label><select class="input-box"><option>Male</option><option>Female</option><option>Other</option></select></div><div><label class="text-xs text-gray-400 mb-1 block">Occupation</label><input type="text" class="input-box" placeholder="Developer"></div></div>
-          <button class="btn-primary w-full" onclick="saveProfile()">Save Changes</button>
-        </div>
-      </div>
-    </div>
-    <div class="page" id="page-verification">
-      <div class="max-w-xl mx-auto">
-        <div class="text-center mb-6"><div class="w-14 h-14 rounded-full bg-blue-600 mx-auto flex items-center justify-center mb-3"><span class="text-2xl">✓</span></div><h2 class="text-xl font-bold text-white">Get Verified</h2></div>
-        <div class="glass-card rounded-xl p-5 space-y-4">
-          <div><label class="text-xs text-gray-400 mb-1 block">Full Legal Name</label><input type="text" class="input-box"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Category</label><select class="input-box"><option>Creator</option><option>Business</option><option>Artist</option></select></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Why verified?</label><textarea class="input-box" rows="3"></textarea></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Upload ID</label><div class="border border-dashed border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500" onclick="document.getElementById('idUpload').click()"><p class="text-sm text-gray-400">Click to upload</p></div><input type="file" id="idUpload" style="display:none"></div>
-          <button class="btn-primary w-full" onclick="alert('Submitted!')">Submit</button>
-        </div>
-      </div>
-    </div>
-    <div class="page" id="page-creator-hub">
-      <div class="max-w-3xl mx-auto">
-        <div class="text-center mb-6"><div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 mx-auto flex items-center justify-center mb-3"><span class="text-2xl">🎬</span></div><h2 class="text-xl font-bold text-white">Creator Hub</h2><p class="text-gray-400 text-sm">Create exclusive content</p></div>
-        <div class="glass-card rounded-xl p-5 mb-4"><div class="grid grid-cols-3 gap-3 text-center"><div class="glass-light rounded-lg p-3"><p class="font-bold text-white">4.9%</p><p class="text-xs text-gray-400">Fee</p></div><div class="glass-light rounded-lg p-3"><p class="font-bold text-white">$5+</p><p class="text-xs text-gray-400">Min Price</p></div><div class="glass-light rounded-lg p-3"><p class="font-bold text-white">24hr</p><p class="text-xs text-gray-400">Payout</p></div></div></div>
-        <div class="glass-card rounded-xl p-5 space-y-4">
-          <h3 class="font-semibold text-white">Apply to Create</h3>
-          <div><label class="text-xs text-gray-400 mb-1 block">Brand Name</label><input type="text" class="input-box"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Category</label><select class="input-box"><option>Photography</option><option>Music</option><option>Fitness</option><option>Education</option></select></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Price (USD/mo)</label><input type="number" class="input-box" min="5"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Describe Content</label><textarea class="input-box" rows="3"></textarea></div>
-          <button class="btn-primary w-full" onclick="alert('Applied!')">Apply</button>
-        </div>
-      </div>    </div>
-    <div class="page" id="page-creators-follow"><div class="max-w-3xl mx-auto"><h2 class="text-xl font-bold text-white mb-4">Creators I Follow</h2><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="creatorsList"></div></div></div>
-    <div class="page" id="page-groups"><div class="max-w-4xl mx-auto"><div class="flex items-center justify-between mb-4"><h2 class="text-xl font-bold text-white">Group Chats</h2><button class="btn-primary text-sm" onclick="openCreateGroup()">+ Create Group</button></div><div id="groupsContent"></div></div></div>
-    <div class="page" id="page-group-chat">
-      <div class="max-w-4xl mx-auto">
-        <div class="flex items-center gap-3 mb-4"><button class="chat-back-btn" onclick="navigateTo('groups')">← Back</button><h2 class="text-xl font-bold text-white" id="groupChatTitle">Group Chat</h2></div>
-        <div class="glass-card rounded-xl flex flex-col overflow-hidden" style="height:calc(100vh - 160px)">
-          <div class="p-3 border-b border-gray-700/20 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-sm font-bold flex-shrink-0" id="groupChatAvatar">GC</div><div><p class="font-semibold text-sm text-white" id="groupChatName"></p><p class="text-xs text-gray-400" id="groupChatMembers"></p></div></div>
-            <button class="btn-outline text-xs" id="groupSettingsBtn" onclick="openGroupSettings()">⚙️ Settings</button>
-          </div>
-          <div class="flex-1 overflow-y-auto scrollbar-thin p-3" id="groupMsgBox"></div>
-          <div class="p-3 border-t border-gray-700/20 flex-shrink-0"><div class="flex gap-2"><textarea class="msg-input flex-1" id="groupMsgInput" placeholder="Type in group..." rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendGroupMsg()}"></textarea><button class="btn-primary px-5 flex-shrink-0" onclick="sendGroupMsg()">Send</button></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="page" id="page-group-settings">
-      <div class="max-w-xl mx-auto">
-        <div class="flex items-center gap-3 mb-4"><button class="btn-outline text-sm" onclick="backToGroupChat()">← Back</button><h2 class="text-xl font-bold text-white">Group Settings</h2></div>
-        <div class="glass-card rounded-xl p-5 space-y-5">
-          <div><label class="text-xs text-gray-400 mb-1 block">Group Name</label><input type="text" class="input-box" id="settingsGroupName"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Group Tag</label><input type="text" class="input-box" id="settingsGroupTag"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Description</label><textarea class="input-box" rows="2" id="settingsGroupDesc"></textarea></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Members</label><div class="space-y-2" id="settingsMembersList"></div></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Add Member</label><div class="flex gap-2"><input type="text" class="input-box flex-1" id="addMemberInput" placeholder="@username"><button class="btn-primary text-sm" onclick="addGroupMember()">Add</button></div></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Join Link</label><div class="flex gap-2"><input type="text" class="input-box flex-1" id="groupJoinLink" readonly><button class="btn-outline text-sm" onclick="copyGroupLink()">Copy</button></div></div>
-          <div class="flex items-center justify-between"><div><p class="text-sm text-gray-300">Only admins can post</p><p class="text-xs text-gray-500">Restrict to admins</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" id="adminOnlyPost"><div class="w-10 h-5 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div>
-          <div class="flex gap-2 pt-2"><button class="btn-primary flex-1" onclick="saveGroupSettings()">Save</button><button class="btn-outline flex-1" style="border-color:rgba(239,68,68,0.4);color:#f87171" onclick="deleteGroup()">Delete</button></div>
-        </div>
-      </div>
-    </div>
-    <div class="page" id="page-settings"><div class="max-w-xl mx-auto"><h2 class="text-xl font-bold text-white mb-4">Settings</h2><div class="space-y-3"><div class="glass-card rounded-xl p-4"><h3 class="font-semibold text-white text-sm mb-3">Account</h3><div class="space-y-3"><div class="flex items-center justify-between"><div><p class="text-sm text-gray-300">Email Notifications</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-10 h-5 bg-gray-700 rounded-full peer peer-checked:bg-blue-600peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div><div class="flex items-center justify-between"><div><p class="text-sm text-gray-300">Two-Factor Auth</p></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="w-10 h-5 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div></div></div></div></div></div>
-    <div id="createPostModal" style="display:none" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div class="glass rounded-xl w-full max-w-lg mx-4 p-5" style="max-height:90vh;overflow-y:auto">
-        <div class="flex items-center justify-between mb-4"><h3 class="font-semibold text-white">Create Post</h3><button class="text-gray-400 hover:text-white text-xl" onclick="closeCreatePost()">✕</button></div>
-        <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">JD</div><div><p class="font-semibold text-sm text-white">John Doe</p><p class="text-xs text-gray-400">🌍 Public</p></div></div>
-        <textarea class="input-box mb-4" rows="4" placeholder="What's on your mind?" id="newPostContent" style="min-height:80px"></textarea>
-        <div id="createPostPreview" style="display:none"></div>
-        <div class="flex gap-2 mb-4"><button class="action-btn flex-1 justify-center" onclick="document.getElementById('newPostImage').click()">📷 Photo</button><button class="action-btn flex-1 justify-center" onclick="document.getElementById('newPostVideo').click()">🎥 Video</button><button class="action-btn flex-1 justify-center" onclick="openFeelingPicker()">😊 Feeling</button></div>
-        <input type="file" id="newPostImage" accept="image/*" style="display:none" onchange="previewPostMedia(this, 'image')">
-        <input type="file" id="newPostVideo" accept="video/*" style="display:none" onchange="previewPostMedia(this, 'video')">
-        <div id="feelingPicker" style="display:none" class="glass-light rounded-lg p-3 mb-3 max-h-40 overflow-y-auto"><p class="text-xs text-gray-400 mb-2">How are you feeling?</p><div class="flex flex-wrap gap-2" id="feelingOptions"></div></div>
-        <button class="btn-primary w-full" onclick="publishPost()">Post</button>
-      </div>
-    </div>
-    <div id="createGroupModal" style="display:none" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div class="glass rounded-xl w-full max-w-lg mx-4 p-5">
-        <div class="flex items-center justify-between mb-4"><h3 class="font-semibold text-white">Create Group Chat</h3><button class="text-gray-400 hover:text-white text-xl" onclick="closeCreateGroup()">✕</button></div>
-        <div class="space-y-3">
-          <div><label class="text-xs text-gray-400 mb-1 block">Group Name</label><input type="text" class="input-box" id="newGroupName" placeholder="My group"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Group Tag</label><input type="text" class="input-box" id="newGroupTag" placeholder="#mygroup"></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Description</label><textarea class="input-box" rows="2" id="newGroupDesc"></textarea></div>
-          <div><label class="text-xs text-gray-400 mb-1 block">Members (comma separated)</label><input type="text" class="input-box" id="newGroupMembers" placeholder="@user1, @user2"></div>
-        </div>
-        <button class="btn-primary w-full mt-4" onclick="createGroup()">Create Group</button>
-      </div>
-    </div>
-  </div>
+<nav class="fixed top-0 left-0 right-0 z-50 glass p-3" style="height:56px;">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-2xl">🌐</span>
+<span class="font-bold bg-gradient-to-r from-blue-400 to-blue-200 bg-clip-text text-transparent">Sphere Lite</span>
 </div>
-[<script>
-// const SUPABASE_URL = 'YOUR_PROJECT_URL';
-// const SUPABASE_KEY = 'YOUR_ANON_KEY';
-// const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let currentUser = { name: 'John Doe', username: '@johndoe', initials: 'JD', verified: true };
-let viewingProfile = null, activeChat = null, activeGroupChat = null, isSecretMsg = false, isVoiceMode = false, currentPostTool = null, pendingMedia = null, pendingFeeling = '';
-const feelings = ['😊 Happy','😢 Sad','😡 Angry','🥰 Loved','😎 Cool','🤔 Thinking','😴 Sleepy','🎉 Excited','💪 Strong','🙏 Grateful','😰 Stressed','🤒 Sick','😋 Hungry','🏃 Active','❤️ In Love','🎵 Musical','📚 Studying','🍕 Eating','☀️ Sunny','🌧 Rainy'];
+<div class="flex gap-2">
+<div class="nav-item active" onclick="navigateTo('home')">Home</div>
+<div class="nav-item" onclick="navigateTo('friends')">Friends</div>
+<div class="nav-item" onclick="navigateTo('messages')">Messages</div>
+<div class="nav-item" onclick="navigateTo('notifications')">Alerts</div>
+</div>
+<div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 cursor-pointer flex items-center justify-center text-xs font-bold" onclick="toggleDropdown()">JD</div>
+<div class="dropdown glass p-2 absolute top-14 right-0 w-48 hidden" id="profileDropdown">
+<div class="dropdown-item" onclick="navigateTo('profile')">Profile</div>
+<div class="dropdown-item" onclick="handleLogout()">Log Out</div>
+</div>
+</div>
+</nav>
+<div style="margin-top:56px;" class="max-w-7xl mx-auto px-4 py-4">
+<div class="page active" id="page-home">
+<div class="flex gap-4">
+<div class="hidden lg:block w-60">
+<div class="glass rounded-xl p-4 sticky top-16">
+<div class="flex items-center gap-2 mb-4">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">JD</div>
+<div><p class="font-semibold text-sm text-white">John Doe</p><p class="text-xs text-gray-400">@johndoe</p></div>
+</div>
+<div class="space-y-1">
+<div class="nav-item active" onclick="navigateTo('home')">Feed</div>
+<div class="nav-item" onclick="navigateTo('profile')">Profile</div>
+<div class="nav-item" onclick="navigateTo('friends')">Friends</div>
+</div>
+</div>
+</div>
+<div class="flex-1 max-w-xl mx-auto">
+<div class="glass rounded-xl p-4 mb-4">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">JD</div>
+<input type="text" class="flex-1 bg-gray-800 border border-gray-700 rounded-full px-4 py-2 text-sm" placeholder="What's on your mind?" onclick="openCreatePost()">
+</div>
+<div class="flex gap-2">
+<button class="action-btn" onclick="togglePostTool('photo')">📷 Photo</button>
+<button class="action-btn" onclick="togglePostTool('video')">🎥 Video</button>
+<button class="action-btn" onclick="togglePostTool('feeling')">😊 Feeling</button>
+</div>
+<div id="postToolArea" class="mt-3" style="display:none"></div>
+</div>
+<div id="feedContainer"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="page" id="page-friends">
+<div class="max-w-4xl mx-auto">
+<h2 class="text-xl font-bold text-white mb-4">Friends</h2>
+<div id="friendsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+</div>
+</div>
+<div class="page" id="page-messages">
+<div class="flex h-[calc(100vh-108px)]">
+<div class="w-64 glass rounded-l-xl flex flex-col">
+<div class="p-3 border-b border-gray-700"><h3 class="font-semibold text-white">Chats</h3></div>
+<div id="convList" class="flex-1 overflow-y-auto"></div>
+</div>
+<div class="flex-1 glass rounded-r-xl flex flex-col">
+<div class="p-3 border-b border-gray-700 flex items-center gap-2">
+<button class="md:hidden" onclick="closeChatView()">← Back</button>
+<div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold" id="chatAvatar">SM</div>
+<p class="font-semibold text-sm text-white" id="chatName">Select chat</p>
+</div>
+<div id="msgBox" class="flex-1 overflow-y-auto p-3">
+<div class="text-center text-gray-500 py-20">Select a conversation</div>
+</div>
+<div class="p-3 border-t border-gray-700" id="msgInputWrap" style="display:none">
+<input type="text" class="w-full bg-gray-800 border border-gray-700 rounded-full px-4 py-2" id="msgInput" placeholder="Type a message...">
+<button class="bg-blue-600 text-white px-4 py-2 rounded-full mt-2 w-full" onclick="sendMessage()">Send</button>
+</div>
+</div>
+</div>
+</div>
+<div class="page" id="page-notifications">
+<div class="max-w-2xl mx-auto">
+<h2 class="text-xl font-bold text-white mb-4">Notifications</h2>
+<div id="notifList"></div>
+</div>
+</div>
+<div class="page" id="page-profile">
+<div class="max-w-3xl mx-auto">
+<div class="glass rounded-xl overflow-hidden mb-4">
+<div class="h-32 bg-gradient-to-r from-blue-700 to-purple-700 relative">
+<div class="absolute -bottom-12 left-4">
+<div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-4 border-gray-900 flex items-center justify-center text-2xl font-bold">JD</div>
+</div>
+</div>
+<div class="pt-14 pb-4 px-4">
+<h2 class="text-xl font-bold text-white">John Doe ✓</h2>
+<p class="text-gray-400 text-sm">@johndoe · 29 · San Francisco, CA</p>
+<p class="text-gray-300 text-sm mt-2">Software developer & creator 🌍</p>
+<div class="flex gap-4 mt-3">
+<div class="text-center"><p class="font-bold text-white text-sm">248</p><p class="text-xs text-gray-400">Posts</p></div>
+<div class="text-center"><p class="font-bold text-white text-sm">1.2K</p><p class="text-xs text-gray-400">Friends</p></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+let currentUser = { name: 'John Doe', username: '@johndoe', initials: 'JD' };
+let viewingProfile = null, activeChat = null;
 const posts = [
-  { id:1, author:'Sarah Chen', username:'@sarahchen', initials:'SC', grad:'from-pink-500 to-rose-600', time:'2h ago', content:'Just launched my new design portfolio! 🎨 What do you think? #design', likes:42, comments:[{author:'Mike Ross',username:'@mikeross',initials:'MR',text:'Amazing work! 🔥'},{author:'Alex Kim',username:'@alexkim',initials:'AK',text:'Love the colors ✨'}], shares:8, liked:false, shared:false, mediaType:null, mediaUrl:null, feeling:null },
-  { id:2, author:'Marcus Johnson', username:'@marcusj', initials:'MJ', grad:'from-green-500 to-emerald-600', time:'4h ago', content:'Morning run complete! 🏃‍♂️ 10K in under 45 minutes. Consistency is key! But you know what really matters is not just the speed, it\'s the journey. Every single step you take, no matter how small, is progress. I used to struggle with running even 1K, but now I\'m doing 10K regularly. The secret? Start small, be consistent, and don\'t compare yourself to others. Your only competition is who you were yesterday. Remember: Rome wasn\'t built in a day, and neither was I. Every champion was once a beginner who refused to give up. So if you\'re just starting out, don\'t worry about being slow or not being good enough. Just show up, put in the work, and trust the process. The results will come, I promise you that! 💪🔥', likes:128, comments:[{author:'Lisa Park',username:'@lisap',initials:'LP',text:'Keep it up! 💪'}], shares:15, liked:false, shared:false, mediaType:null, mediaUrl:null, feeling:null },
-  { id:3, author:'Emma Watson', username:'@emmaw', initials:'EW', grad:'from-purple-500 to-violet-600', time:'6h ago', content:'Coffee and code ☕💻 Working on something exciting today!', likes:67, comments:[], shares:3, liked:false, shared:false, mediaType:null, mediaUrl:null, feeling:'😊 Happy' },
-  { id:4, author:'David Park', username:'@davidp', initials:'DP', grad:'from-yellow-500 to-orange-600', time:'8h ago', content:'Just finished "Atomic Habits" - highly recommend! 📚 What\'s the last book you read?', likes:234, comments:[{author:'Nina Patel',username:'@ninap',initials:'NP',text:'Great pick! Loved "Deep Work" too'}], shares:45, liked:false, shared:false, mediaType:null, mediaUrl:null, feeling:null }
+  { id:1, author:'Sarah Chen', initials:'SC', grad:'from-pink-500 to-rose-600', time:'2h ago', content:'Just launched my design portfolio! 🎨', likes:42, comments:[{author:'Mike', text:'Amazing work!'}], shares:8, liked:false },
+  { id:2, author:'Marcus Johnson', initials:'MJ', grad:'from-green-500 to-emerald-600', time:'4h ago', content:'Morning run complete! 🏃‍♂️ 10K in under 45 minutes.', likes:128, comments:[], shares:15, liked:false }
 ];
 const friends = [
-  { name:'Sarah Chen', username:'@sarahchen', initials:'SC', grad:'from-pink-500 to-rose-600', mutual:12, status:'online', bio:'Designer & artist 🎨', posts:34, age:26, location:'New York, USA', verified:false, website:'' },
-  { name:'Marcus Johnson', username:'@marcusj', initials:'MJ', grad:'from-green-500 to-emerald-600', mutual:8, status:'online', bio:'Fitness enthusiast 🏃', posts:56, age:28, location:'London, UK', verified:false, website:'' },
-  { name:'Emma Watson', username:'@emmaw', initials:'EW', grad:'from-purple-500 to-violet-600', mutual:24, status:'offline', bio:'Developer ☕', posts:23, age:25, location:'San Francisco, USA', verified:true, website:'emmaw.dev' },
-  { name:'David Park', username:'@davidp', initials:'DP', grad:'from-yellow-500 to-orange-600', mutual:6, status:'online', bio:'Book lover 📚', posts:45, age:30, location:'Seoul, Korea', verified:false, website:'' },
-  { name:'Lisa Park', username:'@lisap', initials:'LP', grad:'from-cyan-500 to-blue-600', mutual:15, status:'online', bio:'Travel & food 🍣', posts:67, age:27, location:'Tokyo, Japan', verified:false, website:'' },
-  { name:'Alex Kim', username:'@alexkim', initials:'AK', grad:'from-red-500 to-pink-600', mutual:3, status:'offline', bio:'Photographer 📸', posts:89, age:24, location:'LA, USA', verified:false, website:'' },
-  { name:'Tom Wilson', username:'@tomw', initials:'TW', grad:'from-teal-500 to-green-600', mutual:9, status:'online', bio:'Music producer 🎵', posts:12, age:29, location:'Berlin, Germany', verified:false, website:'' },
-  { name:'Nina Patel', username:'@ninap', initials:'NP', grad:'from-indigo-500 to-purple-600', mutual:18, status:'online', bio:'Writer ✍️', posts:34, age:26, location:'Mumbai, India', verified:false, website:'' }
+  { name:'Sarah Chen', initials:'SC', grad:'from-pink-500 to-rose-600', status:'online', bio:'Designer & artist', posts:34 },
+  { name:'Marcus Johnson', initials:'MJ', grad:'from-green-500 to-emerald-600', status:'online', bio:'Fitness enthusiast', posts:56 },
+  { name:'Emma Watson', initials:'EW', grad:'from-purple-500 to-violet-600', status:'offline', bio:'Developer', posts:23 }
 ];
 const messages = {
-  'Sarah Chen': [{ text:'Hey! How are you?', sent:false, time:'10:30 AM', secret:false },{ text:'I\'m great! Just working on the new project', sent:true, time:'10:32 AM', secret:false },{ text:'That sounds exciting!', sent:false, time:'10:33 AM', secret:false }],
-  'Marcus Johnson': [{ text:'Ready for the run tomorrow?', sent:false, time:'9:00 AM', secret:false },{ text:'Absolutely! Same time, same place 🏃', sent:true, time:'9:05 AM', secret:false }],
-  'Emma Watson': [{ text:'Love your latest post!', sent:false, time:'Yesterday', secret:false }]
+  'Sarah Chen': [
+    { text:'Hey! How are you?', sent:false, time:'10:30 AM' },
+    { text:'I\'m great! Just working on the new project', sent:true, time:'10:32 AM' }
+  ],
+  'Marcus Johnson': [
+    { text:'Ready for the run tomorrow?', sent:false, time:'9:00 AM' },
+    { text:'Absolutely! Same time, same place 🏃', sent:true, time:'9:05 AM' }
+  ]
 };
-const creators = [{ name:'Sarah Chen', initials:'SC', grad:'from-pink-500 to-rose-600', category:'Design', price:'$9.99/mo', posts:48 },{ name:'David Park', initials:'DP', grad:'from-yellow-500 to-orange-600', category:'Photography', price:'$14.99/mo', posts:124 },{ name:'Lisa Park', initials:'LP', grad:'from-cyan-500 to-blue-600', category:'Fitness', price:'$7.99/mo', posts:86 }];
-const datingProfiles = [
-  { name:'Sofia Martinez', initials:'SM', grad:'from-pink-400 to-rose-500', age:25, location:'Madrid, Spain', bio:'Art lover & traveler ✈️', online:true },
-  { name:'Yuki Tanaka', initials:'YT', grad:'from-purple-400 to-violet-500', age:23, location:'Tokyo, Japan', bio:'Foodie & photographer 📸', online:true },
-  { name:'Amara Johnson', initials:'AJ', grad:'from-amber-400 to-orange-500', age:27, location:'Lagos, Nigeria', bio:'Music & dance 💃', online:true },
-  { name:'Elena Rossi', initials:'ER', grad:'from-cyan-400 to-blue-500', age:24, location:'Rome, Italy', bio:'Wine & chef 🍷', online:false },
-  { name:'Priya Sharma', initials:'PS', grad:'from-green-400 to-emerald-500', age:26, location:'Mumbai, India', bio:'Yoga & books 🧘‍♀️', online:true },
-  { name:'Chloe Williams', initials:'CW', grad:'from-red-400 to-pink-500', age:22, location:'London, UK', bio:'Fashion & fitness 💪', online:true },
-  { name:'Hana Kim', initials:'HK', grad:'from-indigo-400 to-purple-500', age:24, location:'Seoul, Korea', bio:'Dancer & gamer 🎮', online:true },
-  { name:'Isabella Silva', initials:'IS', grad:'from-teal-400 to-green-500', age:28, location:'São Paulo, Brazil', bio:'Surfer 🏄‍♀️', online:false }
-];
 const notifications = [
   { user:'Sarah Chen', text:'liked your post', time:'5m ago', grad:'from-pink-500 to-rose-600' },
-  { user:'Marcus Johnson', text:'commented on your photo', time:'15m ago', grad:'from-green-500 to-emerald-600' },
-  { user:'Emma Watson', text:'sent a friend request', time:'1h ago', grad:'from-purple-500 to-violet-600' },
-  { user:'David Park', text:'shared your post', time:'2h ago', grad:'from-yellow-500 to-orange-600' },
-  { user:'Lisa Park', text:'and 12 others liked your comment', time:'3h ago', grad:'from-cyan-500 to-blue-600' }
+  { user:'Marcus Johnson', text:'commented on your photo', time:'15m ago', grad:'from-green-500 to-emerald-600' }
 ];
-let groups = [
-  { id:'g1', name:'Dev Community', tag:'#devcommunity', desc:'A group for developers', members:[{ name:'John Doe', username:'@johndoe', initials:'JD', isAdmin:true },{ name:'Sarah Chen', username:'@sarahchen', initials:'SC', isAdmin:false },{ name:'Marcus Johnson', username:'@marcusj', initials:'MJ', isAdmin:true }], messages:[{ author:'Sarah Chen', initials:'SC', text:'Hey everyone! Anyone working on React?', time:'10:00 AM' },{ author:'Marcus Johnson', initials:'MJ', text:'Yes! Building a dashboard right now', time:'10:05 AM' }], joinLink:'https://spherelite.com/join/g1-devcommunity', adminOnlyPost:false },
-  { id:'g2', name:'Fitness Squad', tag:'#fitnesssquad', desc:'Share workout routines', members:[{ name:'John Doe', username:'@johndoe', initials:'JD', isAdmin:false },{ name:'Lisa Park', username:'@lisap', initials:'LP', isAdmin:true }], messages:[{ author:'Lisa Park', initials:'LP', text:'Morning workout done! 💪', time:'8:00 AM' }], joinLink:'https://spherelite.com/join/g2-fitnesssquad', adminOnlyPost:false }
-];
+</script>
+<script>
+function navigateTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.classList.add('active');
+  closeDropdown();
+}
 
-function init() { renderFeed(); renderFriends('all'); renderOnlineFriends(); renderConversations(); renderNotifications(); renderCreators(); renderDating(); renderGroups(); initFeelings(); renderProfile(); }
-function initFeelings() { document.getElementById('feelingOptions').innerHTML = feelings.map(f => `<button class="action-btn text-xs whitespace-nowrap" onclick="selectFeeling('${f}')">${f}</button>`).join(''); }
-function renderProfile() { document.getElementById('profileExtra').textContent = ['@johndoe','29','San Francisco, CA'].join(' · '); document.getElementById('profileWebsite').style.display = currentUser.verified ? 'inline-block' : 'none'; }
-function navigateTo(page) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); const el = document.getElementById('page-'+page); if(el) el.classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); const nav = document.getElementById('nav-'+page); if(nav) nav.classList.add('active'); closeDropdown(); window.scrollTo(0,0); }
-function toggleDropdown() { document.getElementById('profileDropdown').classList.toggle('show'); }
-function closeDropdown() { document.getElementById('profileDropdown').classList.remove('show'); }
-document.addEventListener('click', function(e) { const dd = document.getElementById('profileDropdown'); const av = document.getElementById('profileAvatar'); if(dd && !dd.contains(e.target) && av && !av.contains(e.target)) closeDropdown(); });
-function renderFeed() { document.getElementById('feedContainer').innerHTML = posts.map(p => createPostHTML(p)).join(''); }
-function createPostHTML(post) {
-  const isLong = post.content.length > 180;
-  const commentsHTML = post.comments.map(cm => `<div class="flex items-start gap-2 mb-2"><div class="avatar-sm bg-gradient-to-br from-blue-500 to-purple-600" onclick="openUserProfile('${cm.username}','${cm.author}','${cm.initials}','from-blue-500 to-purple-600','${cm.text}',${Math.floor(Math.random()*50)+10})">${cm.initials}</div><div><p class="text-xs"><span class="font-semibold text-white cursor-pointer hover:underline" onclick="openUserProfile('${cm.username}','${cm.author}','${cm.initials}','from-blue-500 to-purple-600','${cm.text}',${Math.floor(Math.random()*50)+10})">${cm.author}</span></p><p class="text-xs text-gray-300">${cm.text}</p></div></div>`).join('');
-  let mediaHTML = '';
-  if(post.mediaType==='image' && post.mediaUrl) mediaHTML = `<div class="mt-2 rounded-xl overflow-hidden"><img src="${post.mediaUrl}" class="w-full rounded-xl" style="max-height:400px;object-fit:cover"></div>`;
-  else if(post.mediaType==='video' && post.mediaUrl) mediaHTML = `<div class="mt-2 rounded-xl overflow-hidden"><video controls class="w-full rounded-xl" style="max-height:400px"><source src="${post.mediaUrl}"></video></div>`;
-  let feelingHTML = post.feeling ? `<p class="text-sm text-gray-200 mb-1">feeling <span style="color:#60a5fa">${post.feeling}</span></p>` : '';
-  const textId = 'text-'+post.id, btnId = 'moreBtn-'+post.id;
-  return `<div class="glass-card rounded-xl p-4 mb-3" id="post-${post.id}"><div class="flex items-center gap-2 mb-2"><div class="avatar-sm bg-gradient-to-br ${post.grad}" onclick="openUserProfile('${post.username}','${post.author}','${post.initials}','${post.grad}','${post.content.replace(/'/g,"\\'")}',${post.likes})">${post.initials}</div><div class="flex-1 min-w-0"><p class="font-semibold text-sm text-white cursor-pointer hover:underline truncate" onclick="openUserProfile('${post.username}','${post.author}','${post.initials}','${post.grad}','${post.content.replace(/'/g,"\\'")}',${post.likes})">${post.author}</p><p class="text-xs text-gray-500">${post.time}</p></div></div>${feelingHTML}<div><div class="post-content-text text-sm text-gray-200 leading-relaxed ${isLong?'collapsed':''}" id="${textId}">${post.content}</div>${isLong?`<span class="read-more-btn" id="${btnId}" onclick="togglePostText('${textId}','${btnId}')">... more</span>`:''}</div>${mediaHTML}<div class="flex items-center justify-between text-xs text-gray-500 mt-2 mb-2"><span>${post.likes} likes</span><span>${post.comments.length} comments · ${post.shares} shares</span></div><div class="flex items-center justify-between pt-2 border-t border-gray-700/20"><button class="action-btn ${post.liked?'liked':''}" id="likeBtn-${post.id}" onclick="toggleLike(${post.id})">❤️ ${post.liked?'Liked':'Like'}</button><button class="action-btn" onclick="toggleComments('comments-${post.id}')">💬 Comment</button><button class="action-btn ${post.shared?'liked':''}" onclick="toggleShare(${post.id})" style="color:${post.shared?'#4ade80':'#94a3b8'}">🔗 Share</button></div><div class="comment-section" id="comments-${post.id}"><div class="mb-2">${commentsHTML}</div><div class="flex items-center gap-2 mt-2"><div class="avatar-sm bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0">JD</div><input type="text" class="input-box text-sm flex-1" placeholder="Write a comment..." id="commentInput-${post.id}" onkeydown="if(event.key==='Enter')addComment(${post.id})"><button class="btn-primary text-sm px-3 py-1 flex-shrink-0" onclick="addComment(${post.id})">Send</button></div></div></div>`;
+function toggleDropdown() {
+  document.getElementById('profileDropdown').classList.toggle('hidden');
 }
-function togglePostText(textId, btnId) { const t=document.getElementById(textId), b=document.getElementById(btnId); if(!t||!b)return; if(t.classList.contains('collapsed')){t.classList.remove('collapsed');t.classList.add('expanded');b.textContent='show less';}else{t.classList.remove('expanded');t.classList.add('collapsed');b.textContent='... more';} }
-function toggleLike(id) { const p=posts.find(x=>x.id===id); if(!p)return; p.liked=!p.liked; p.likes+=p.liked?1:-1; const btn=document.getElementById('likeBtn-'+id); if(btn){btn.className='action-btn'+(p.liked?' liked':''); btn.innerHTML='❤️ '+(p.liked?'Liked':'Like');} }
-function toggleComments(id) { const s=document.getElementById(id); if(!s)return; s.classList.toggle('show'); const inp=document.getElementById('commentInput-'+id.replace('comments-','')); if(s.classList.contains('show')&&inp)inp.focus(); }
-function addComment(id) { const inp=document.getElementById('commentInput-'+id); if(!inp||!inp.value.trim())return; const p=posts.find(x=>x.id===id); p.comments.push({author:'John Doe',username:'@johndoe',initials:'JD',text:inp.value.trim()}); inp.value=''; renderFeed(); document.getElementById('comments-'+id).classList.add('show'); }
-function toggleShare(id) { const p=posts.find(x=>x.id===id); if(!p)return; p.shared=!p.shared; p.shares+=p.shared?1:-1; renderFeed(); }
-function togglePostTool(tool) {
-  const area=document.getElementById('postToolArea'), photoBtn=document.getElementById('photoBtn'), videoBtn=document.getElementById('videoBtn'), feelingBtn=document.getElementById('feelingBtn');
-  photoBtn.classList.remove('active-tool'); videoBtn.classList.remove('active-tool'); feelingBtn.classList.remove('active-tool');
-  if(currentPostTool===tool){currentPostTool=null; area.style.display='none'; return;}
-  currentPostTool=tool;
-  if(tool==='photo'){photoBtn.classList.add('active-tool'); const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=function(e){const f=e.target.files[0]; if(f){const r=new FileReader(); r.onload=function(ev){area.innerHTML=`<div class="relative"><img src="${ev.target.result}" class="w-full h-48 object-cover rounded-xl"><button class="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm" onclick="clearPostTool()">✕</button><p class="text-xs text-gray-400 mt-2">${f.name}</p></div>`; pendingMedia={type:'image',url:ev.target.result,name:f.name};}; r.readAsDataURL(f);}}; inp.click();}
-  else if(tool==='video'){videoBtn.classList.add('active-tool'); const inp=document.createElement('input'); inp.type='file'; inp.accept='video/*'; inp.onchange=function(e){const f=e.target.files[0]; if(f){const r=new FileReader(); r.onload=function(ev){area.innerHTML=`<div class="relative"><video src="${ev.target.result}" controls class="w-full rounded-xl" style="max-height:250px"></video><button class="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm" onclick="clearPostTool()">✕</button><p class="text-xs text-gray-400 mt-2">🎥 ${f.name}</p></div>`; pendingMedia={type:'video',url:ev.target.result,name:f.name};}; r.readAsDataURL(f);}}; inp.click();}
-  else if(tool==='feeling'){feelingBtn.classList.add('active-tool'); area.innerHTML=`<div class="glass-light rounded-lg p-3"><p class="text-xs text-gray-400 mb-2">How are you feeling?</p><div class="flex flex-wrap gap-2">${feelings.map(f=>`<button class="action-btn text-xs" onclick="selectInlineFeeling('${f}')">${f}</button>`).join('')}</div><div id="selectedFeelingDisplay" class="mt-2 hidden"><p class="text-sm text-blue-400"></p></div></div>`;}
+
+function closeDropdown() {
+  document.getElementById('profileDropdown').classList.add('hidden');
 }
-function selectInlineFeeling(f) { const d=document.getElementById('selectedFeelingDisplay'); if(d){d.classList.remove('hidden');d.querySelector('p').textContent=f;pendingFeeling=f;} }
-function clearPostTool() { document.getElementById('postToolArea').style.display='none'; document.getElementById('postToolArea').innerHTML=''; document.getElementById('photoBtn').classList.remove('active-tool'); document.getElementById('videoBtn').classList.remove('active-tool'); document.getElementById('feelingBtn').classList.remove('active-tool'); currentPostTool=null; pendingMedia=null; pendingFeeling=''; }]
-function openUserProfile(username,name,initials,grad,bio,postCount) {
-  const friend=friends.find(f=>f.username===username);
-  viewingProfile={username,name,initials,grad,bio:friend?friend.bio:bio,postCount,age:friend?friend.age:'',location:friend?friend.location:'',verified:friend?friend.verified:false,website:friend?friend.website:''};
-  document.getElementById('viewProfilePic').className='w-24 h-24 rounded-full bg-gradient-to-br '+grad+' border-4 border-gray-900 flex items-center justify-center text-2xl font-bold text-white';
-  document.getElementById('viewProfilePic').textContent=initials;
-  document.getElementById('viewProfileName').textContent=name;
-  const extra=[username]; if(viewingProfile.age)extra.push(viewingProfile.age); if(viewingProfile.location)extra.push(viewingProfile.location);
-  document.getElementById('viewProfileUser').textContent=extra.join(' · ');
-  document.getElementById('viewProfileBio').textContent=viewingProfile.bio||'No bio yet';
-  document.getElementById('viewPostsCount').textContent=postCount||0;
-  document.getElementById('viewFriendsCount').textContent=Math.floor(Math.random()*500)+50;
-  const w=document.getElementById('viewProfileWebsite');
-  if(viewingProfile.verified&&viewingProfile.website){w.href='https://'+viewingProfile.website;w.textContent='🌐 '+viewingProfile.website;w.classList.remove('hidden');}else{w.classList.add('hidden');}
-  document.getElementById('viewProfileAddFriend').style.display=friends.some(f=>f.username===username)?'none':'block';
-  document.getElementById('viewProfilePostsArea').innerHTML='<h3 class="text-sm font-semibold text-gray-300 mb-3">Recent Activity</h3>'+'<div class="glass-card rounded-lg p-3 mb-2"><p class="text-sm text-gray-200">Having a great day! ☀️</p><p class="text-xs text-gray-500 mt-1">1h ago</p></div><div class="glass-card rounded-lg p-3 mb-2"><p class="text-sm text-gray-200">Check out this amazing view 🌅</p><p class="text-xs text-gray-500 mt-1">3h ago</p></div>';
-  navigateTo('view-profile');
+
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('profileDropdown');
+  const av = document.querySelector('[onclick="toggleDropdown()"]');
+  if (dd && !dd.contains(e.target) && av && !av.contains(e.target)) closeDropdown();
+});
+
+function renderFeed() {
+  document.getElementById('feedContainer').innerHTML = posts.map(p => `
+    <div class="glass rounded-xl p-4 mb-3">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br ${p.grad} flex items-center justify-center text-sm font-bold">${p.initials}</div>
+        <div><p class="font-semibold text-sm text-white">${p.author}</p><p class="text-xs text-gray-500">${p.time}</p></div>
+      </div>
+      <p class="text-sm text-gray-200 mb-3">${p.content}</p>
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+        <span>${p.likes} likes</span>
+        <span>${p.comments.length} comments · ${p.shares} shares</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <button class="action-btn ${p.liked?'text-red-400':''}" onclick="toggleLike(${p.id})">❤️ ${p.liked?'Liked':'Like'}</button>
+        <button class="action-btn">💬 Comment</button>
+        <button class="action-btn">🔗 Share</button>
+      </div>
+    </div>
+  `).join('');
 }
-function addFriendByName() { if(viewingProfile){alert('Friend request sent to '+viewingProfile.name+'!');document.getElementById('viewProfileAddFriend').style.display='none';} }
-function msgViewProfile() { if(viewingProfile)openChat(viewingProfile.name); }
-function renderFriends(tab) {
-  let list=friends; if(tab==='requests')list=friends.slice(0,3); if(tab==='suggestions')list=friends.slice(3);
-  document.getElementById('friendsGrid').innerHTML=list.map(f=>`<div class="glass-card rounded-xl p-4 text-center"><div class="avatar-sm bg-gradient-to-br ${f.grad} w-16 h-16 text-lg mx-auto mb-2" onclick="openUserProfile('${f.username}','${f.name}','${f.initials}','${f.grad}','${f.bio}',${f.posts})">${f.initials}</div><h3 class="font-semibold text-sm text-white cursor-pointer hover:underline" onclick="openUserProfile('${f.username}','${f.name}','${f.initials}','${f.grad}','${f.bio}',${f.posts})">${f.name}</h3><p class="text-xs text-gray-400">${f.age?f.age+' · ':''}${f.location||''}</p><p class="text-xs text-gray-400 mb-3">${f.mutual} mutual</p><div class="flex items-center justify-center gap-1 mb-2"><span class="w-2 h-2 rounded-full ${f.status==='online'?'bg-green-500':'bg-gray-600'}"></span><span class="text-xs text-gray-400">${f.status==='online'?'Online':'Offline'}</span></div><button class="btn-outline w-full text-xs" onclick="addFriend('${f.name}')">${tab==='requests'?'Accept':'Add Friend'}</button></div>`).join('');
+
+function toggleLike(id) {
+  const post = posts.find(p => p.id === id);
+  if (!post) return;
+  post.liked = !post.liked;
+  post.likes += post.liked ? 1 : -1;
+  renderFeed();}
+
+function renderFriends() {
+  document.getElementById('friendsGrid').innerHTML = friends.map(f => `
+    <div class="glass rounded-xl p-4 text-center">
+      <div class="w-16 h-16 rounded-full bg-gradient-to-br ${f.grad} flex items-center justify-center text-lg mx-auto mb-2">${f.initials}</div>
+      <h3 class="font-semibold text-sm text-white">${f.name}</h3>
+      <p class="text-xs text-gray-400 mb-2">${f.bio}</p>
+      <div class="flex items-center justify-center gap-1 mb-2">
+        <span class="w-2 h-2 rounded-full ${f.status==='online'?'bg-green-500':'bg-gray-600'}"></span>
+        <span class="text-xs text-gray-400">${f.status}</span>
+      </div>
+      <button class="w-full bg-blue-600 text-white text-sm py-1.5 rounded-lg">Add Friend</button>
+    </div>
+  `).join('');
 }
-function showFriendsTab(tab) { document.querySelectorAll('#page-friends .action-btn').forEach(b=>b.classList.remove('active')); document.getElementById('friends'+tab.charAt(0).toUpperCase()+tab.slice(1)+'Btn').classList.add('active'); renderFriends(tab); }
-function addFriend(name) { alert('Friend request sent to '+name+'!'); }
-function renderOnlineFriends() { document.getElementById('onlineFriendsList').innerHTML=friends.filter(f=>f.status==='online').slice(0,5).map(f=>`<div class="flex items-center gap-2 cursor-pointer hover:bg-white/5 rounded-lg p-1.5" onclick="openChat('${f.name}')"><div class="relative"><div class="avatar-sm bg-gradient-to-br ${f.grad}">${f.initials}</div><div class="online-dot"></div></div><div class="flex-1 min-w-0"><p class="text-xs font-medium text-white truncate">${f.name}</p><p class="text-[10px] text-green-400">Online</p></div></div>`).join(''); }
-function renderConversations() { document.getElementById('convList').innerHTML=Object.keys(messages).map(name=>{const last=messages[name][messages[name].length-1];const f=friends.find(x=>x.name===name);const i=f?f.initials:name.split(' ').map(n=>n[0]).join('');const g=f?f.grad:'from-blue-500 to-purple-600';return`<div class="flex items-center gap-2 p-3 cursor-pointer hover:bg-white/5 transition-colors ${activeChat===name?'bg-blue-500/10 border-l-2 border-blue-500':''}" onclick="openChat('${name}')"><div class="relative flex-shrink-0"><div class="avatar-sm bg-gradient-to-br ${g} w-12 h-12 text-sm">${i}</div><div class="w-3 h-3 rounded-full bg-green-500 border-2 border-gray-900 absolute bottom-0 right-0"></div></div><div class="flex-1 min-w-0"><p class="text-sm font-semibold text-white truncate">${name}</p><p class="text-xs text-gray-400 truncate">${last.secret?'🔒 Secret message':last.text}</p></div><span class="text-[10px] text-gray-500 flex-shrink-0">${last.time}</span></div>`;}).join(''); }
+
+function renderConversations() {
+  document.getElementById('convList').innerHTML = Object.keys(messages).map(name => {
+    const last = messages[name][messages[name].length - 1];
+    const friend = friends.find(f => f.name === name);
+    const initials = friend ? friend.initials : name.split(' ').map(n => n[0]).join('');
+    const grad = friend ? friend.grad : 'from-blue-500 to-purple-600';
+    return `
+      <div class="flex items-center gap-2 p-3 cursor-pointer hover:bg-white/5" onclick="openChat('${name}')">
+        <div class="relative">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br ${grad} flex items-center justify-center text-sm">${initials}</div>
+          <div class="w-3 h-3 rounded-full bg-green-500 border-2 border-gray-900 absolute bottom-0 right-0"></div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-white truncate">${name}</p>
+          <p class="text-xs text-gray-400 truncate">${last.text}</p>
+        </div>
+        <span class="text-[10px] text-gray-500">${last.time}</span>
+      </div>
+    `;
+  }).join('');
+}
+
 function openChat(name) {
-  activeChat=name; const f=friends.find(x=>x.name===name); const i=f?f.initials:name.split(' ').map(n=>n[0]).join(''); const g=f?f.grad:'from-blue-500 to-purple-600';
-  document.getElementById('chatName').textContent=name; document.getElementById('chatStatus').textContent='Online';
-  document.getElementById('chatAvatar').className='w-9 h-9 rounded-full bg-gradient-to-br '+g+' flex items-center justify-center text-xs font-bold flex-shrink-0';
-  document.getElementById('chatAvatar').textContent=i; document.getElementById('msgInputWrap').style.display='block';
-  renderMessages(); renderConversations();
-  if(window.innerWidth<768){document.getElementById('msgSidebar').style.display='none';document.getElementById('msgChatArea').style.display='flex';document.getElementById('msgChatArea').classList.add('active');}else{document.getElementById('msgSidebar').style.display='flex';document.getElementById('msgChatArea').style.display='flex';document.getElementById('msgChatArea').classList.add('active');}
-  navigateTo('messages'); setTimeout(()=>{document.getElementById('msgInput').focus();const b=document.getElementById('msgBox');b.scrollTop=b.scrollHeight;},100);
+  activeChat = name;
+  document.getElementById('chatName').textContent = name;
+  document.getElementById('msgInputWrap').style.display = 'block';
+  renderMessages();
+  renderConversations();
+  navigateTo('messages');
+  setTimeout(() => document.getElementById('msgInput').focus(), 100);
 }
-function closeChatView() { activeChat=null; document.getElementById('msgSidebar').style.display='flex'; document.getElementById('msgChatArea').classList.remove('active'); if(window.innerWidth<768){document.getElementById('msgChatArea').style.display='none';}else{document.getElementById('msgChatArea').style.display='flex';} renderConversations(); }
-function renderMessages() { if(!activeChat)return; const c=document.getElementById('msgBox'); const msgs=messages[activeChat]||[]; if(msgs.length===0){c.innerHTML='<div class="empty-chat">No messages yet. Say hi! 👋</div>';return;} c.innerHTML=msgs.map(m=>`<div class="msg-bubble ${m.sent?'msg-sent':'msg-received'} ${m.secret?'secret-msg':''}"><p>${m.secret?'🔒 ':''}${m.text}</p><p class="text-[10px] ${m.sent?'text-blue-200':'text-gray-500'} mt-0.5">${m.time} ${m.sent?'✓✓':''}</p></div>`).join(''); c.scrollTop=c.scrollHeight; }
-function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,150)+'px'; }
+
+function closeChatView() {  activeChat = null;
+  document.getElementById('msgInputWrap').style.display = 'none';
+  renderConversations();
+}
+
+function renderMessages() {
+  if (!activeChat) return;
+  const msgs = messages[activeChat] || [];
+  document.getElementById('msgBox').innerHTML = msgs.map(m => `
+    <div class="mb-3 ${m.sent?'text-right':''}">
+      <div class="inline-block p-3 rounded-xl max-w-xs ${m.sent?'bg-blue-600 text-white rounded-tr-none':'bg-gray-800 text-gray-200 rounded-tl-none'}">
+        <p class="text-sm">${m.text}</p>
+        <p class="text-[10px] ${m.sent?'text-blue-200':'text-gray-500'} mt-1">${m.time}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
 function sendMessage() {
-  const inp=document.getElementById('msgInput'); const text=inp.value.trim(); if(!text||!activeChat)return; if(!messages[activeChat])messages[activeChat]=[];
-  const now=new Date(); const t=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  messages[activeChat].push({text,sent:true,time:t,secret:isSecretMsg}); inp.value=''; inp.style.height='auto'; renderMessages(); renderConversations();
-  if(isSecretMsg){isSecretMsg=false;document.getElementById('secretBadge').classList.add('hidden');}
-  setTimeout(()=>{const r=['That\'s great! 😊','I see!','Awesome! 🎉','Tell me more!','❤️','Haha nice!','👍']; messages[activeChat].push({text:r[Math.floor(Math.random()*r.length)],sent:false,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),secret:false}); renderMessages(); renderConversations();},1200);
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if (!text || !activeChat) return;
+  messages[activeChat].push({ text, sent: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+  inp.value = '';
+  renderMessages();
+  setTimeout(() => {
+    const replies = ['That\'s great!','I see','Nice!'];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    messages[activeChat].push({ text: reply, sent: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+    renderMessages();
+  }, 1000);
 }
-function toggleVoice() { isVoiceMode=!isVoiceMode; document.getElementById('msgInput').placeholder=isVoiceMode?'🎤 Hold to record...':'Type a message...'; }
-function uploadFile() { const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,.pdf,.doc,.zip'; inp.onchange=(e)=>{const f=e.target.files[0]; if(f&&activeChat){messages[activeChat].push({text:'📎 '+f.name,sent:true,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),secret:false}); renderMessages(); renderConversations();}}; inp.click(); }
-function toggleSecret() { isSecretMsg=!isSecretMsg; document.getElementById('secretBadge').classList.toggle('hidden',!isSecretMsg); const inp=document.getElementById('msgInput'); inp.placeholder=isSecretMsg?'🔒 Secret (view once)...':'Type a message...'; inp.style.borderColor=isSecretMsg?'rgba(239,68,68,0.5)':''; }
-function filterConversations(q) { document.querySelectorAll('#convList > div').forEach(item=>{const n=item.querySelector('.font-semibold').textContent.toLowerCase(); item.style.display=n.includes(q.toLowerCase())?'flex':'none';}); }window.addEventListener('resize', function() { if(activeChat&&window.innerWidth>=768){document.getElementById('msgSidebar').style.display='flex';document.getElementById('msgChatArea').style.display='flex';document.getElementById('msgChatArea').classList.add('active');}else if(activeChat&&window.innerWidth<768){document.getElementById('msgSidebar').style.display='none';document.getElementById('msgChatArea').style.display='flex';document.getElementById('msgChatArea').classList.add('active');}else if(!activeChat&&window.innerWidth<768){document.getElementById('msgSidebar').style.display='flex';document.getElementById('msgChatArea').style.display='none';document.getElementById('msgChatArea').classList.remove('active');} });
-function renderNotifications() { document.getElementById('notifList').innerHTML=notifications.map(n=>`<div class="glass-card rounded-lg p-3 flex items-center gap-3"><div class="avatar-sm bg-gradient-to-br ${n.grad}">${n.user.split(' ').map(w=>w[0]).join('')}</div><div class="flex-1"><p class="text-sm text-gray-200"><span class="font-semibold text-white">${n.user}</span> ${n.text}</p><p class="text-xs text-gray-500">${n.time}</p></div></div>`).join(''); }
-function renderDating() { document.getElementById('datingGrid').innerHTML=datingProfiles.map(p=>`<div class="glass-card rounded-xl overflow-hidden"><div class="h-36 bg-gradient-to-br ${p.grad} flex items-center justify-center relative"><span class="text-3xl font-bold text-white/30">${p.initials}</span>${p.online?'<div class="online-dot" style="right:10px;bottom:10px;"></div>':''}</div><div class="p-3"><div class="flex items-center justify-between mb-1"><h3 class="font-semibold text-sm text-white">${p.name}, ${p.age}</h3>${p.online?'<span class="text-[10px] text-green-400">● Online</span>':''}</div><p class="text-[10px] text-gray-400 mb-1">📍 ${p.location}</p><p class="text-xs text-gray-300 mb-2">${p.bio}</p><button class="btn-outline w-full text-xs" onclick="addFriend('${p.name}')">+ Add Friend</button></div></div>`).join(''); }
-function renderCreators() { document.getElementById('creatorsList').innerHTML=creators.map(cr=>`<div class="glass-card rounded-xl overflow-hidden relative"><div class="lock-overlay"><span class="text-2xl">🔒</span><p class="text-white text-sm font-semibold">Locked</p><button class="btn-primary text-xs" onclick="alert('Subscribe to ${cr.name} for ${cr.price}')">Unlock ${cr.price}</button></div><div class="p-4"><div class="flex items-center gap-2 mb-2"><div class="avatar-sm bg-gradient-to-br ${cr.grad} w-12 h-12 text-sm">${cr.initials}</div><div><p class="font-semibold text-sm text-white">${cr.name}</p><p class="text-xs text-gray-400">${cr.category}</p></div></div><div class="flex justify-between text-xs text-gray-400"><span>${cr.posts} posts</span><span>${cr.price}</span></div></div></div>`).join(''); }
-function renderGroups() { document.getElementById('groupsContent').innerHTML=groups.map(g=>`<div class="glass-card rounded-xl p-4 mb-3 cursor-pointer hover:border-blue-500/30" onclick="openGroupChat('${g.id}')"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-sm font-bold flex-shrink-0">${g.name.substring(0,2).toUpperCase()}</div><div class="flex-1 min-w-0"><p class="font-semibold text-sm text-white">${g.name}</p><p class="text-xs text-gray-400">${g.tag} · ${g.members.length} members</p></div><span class="text-xs text-gray-500 flex-shrink-0">${g.messages.length} msgs</span></div></div>`).join(''); }
-function openCreateGroup() { document.getElementById('createGroupModal').style.display='flex'; }
-function closeCreateGroup() { document.getElementById('createGroupModal').style.display='none'; }
-function createGroup() {
-  const n=document.getElementById('newGroupName').value.trim(), t=document.getElementById('newGroupTag').value.trim(), d=document.getElementById('newGroupDesc').value.trim(), m=document.getElementById('newGroupMembers').value.trim();
-  if(!n||!t){alert('Name and tag required');return;}
-  const id='g'+Date.now(), ml=[{name:'John Doe',username:'@johndoe',initials:'JD',isAdmin:true}];
-  if(m)m.split(',').forEach(x=>{const v=x.trim();if(v){const nm=v.replace('@','');ml.push({name:nm,username:v.startsWith('@')?v:'@'+v,initials:nm.substring(0,2).toUpperCase(),isAdmin:false});}});
-  groups.push({id,name:n,tag:t.startsWith('#')?t:'#'+t,desc:d,members:ml,messages:[],joinLink:'https://spherelite.com/join/'+id+'-'+t.replace('#',''),adminOnlyPost:false});
-  renderGroups(); closeCreateGroup(); ['newGroupName','newGroupTag','newGroupDesc','newGroupMembers'].forEach(x=>document.getElementById(x).value=''); navigateTo('groups');
+
+function renderNotifications() {
+  document.getElementById('notifList').innerHTML = notifications.map(n => `
+    <div class="glass rounded-lg p-3 flex items-center gap-3 mb-2">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br ${n.grad} flex items-center justify-center text-sm">${n.user.split(' ').map(w => w[0]).join('')}</div>
+      <div class="flex-1">
+        <p class="text-sm text-gray-200"><span class="font-semibold text-white">${n.user}</span> ${n.text}</p>
+        <p class="text-xs text-gray-500">${n.time}</p>
+      </div>
+    </div>
+  `).join('');
 }
-function openGroupChat(gid) {
-  const g=groups.find(x=>x.id===gid); if(!g)return; activeGroupChat=g;
-  document.getElementById('groupChatTitle').textContent=g.name; document.getElementById('groupChatName').textContent=g.name;
-  document.getElementById('groupChatMembers').textContent=g.members.length+' members';
-  document.getElementById('groupChatAvatar').textContent=g.name.substring(0,2).toUpperCase();
-  document.getElementById('groupSettingsBtn').style.display=g.members.some(m=>m.username==='@johndoe'&&m.isAdmin)?'block':'none';
-  renderGroupMessages(); navigateTo('group-chat');
+
+function handleSignup() {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  if (email && pass) {
+    document.getElementById('signupPage').style.display = 'none';    document.getElementById('mainApp').style.display = 'block';
+    init();
+  }
 }
-function renderGroupMessages() {
-  if(!activeGroupChat)return; const c=document.getElementById('groupMsgBox');
-  if(activeGroupChat.messages.length===0){c.innerHTML='<div class="empty-chat">No messages yet. Start the conversation!</div>';return;}
-  c.innerHTML=activeGroupChat.messages.map(m=>{const mem=activeGroupChat.members.find(x=>x.initials===m.initials);const own=mem&&mem.username==='@johndoe';const gr=own?'from-blue-500 to-purple-600':'from-gray-500 to-gray-700';return`<div class="group-msg-row ${own?'sent':''}"><div class="avatar-sm bg-gradient-to-br ${gr}">${m.initials}</div><div class="msg-content"><p class="msg-author">${m.author}</p><div class="msg-bubble ${own?'msg-sent':'msg-received'}">${m.text}</div><p class="msg-time">${m.time}</p></div></div>`;}).join(''); c.scrollTop=c.scrollHeight;
+
+function handleLogout() {
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('signupPage').style.display = 'block';
 }
-function sendGroupMsg() {
-  const inp=document.getElementById('groupMsgInput'); const text=inp.value.trim(); if(!text||!activeGroupChat)return;
-  const admin=activeGroupChat.members.some(m=>m.username==='@johndoe'&&m.isAdmin);
-  if(activeGroupChat.adminOnlyPost&&!admin){alert('Only admins can post');return;}
-  activeGroupChat.messages.push({author:'John Doe',initials:'JD',text,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
-  inp.value=''; inp.style.height='auto'; renderGroupMessages();
-  setTimeout(()=>{const o=activeGroupChat.members.filter(m=>m.username!=='@johndoe');if(o.length>0){const rm=o[Math.floor(Math.random()*o.length)];const r=['Agreed! 👍','Nice!','Interesting point','I think so too','Great idea! ']; activeGroupChat.messages.push({author:rm.name,initials:rm.initials,text:r[Math.floor(Math.random()*r.length)],time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}); renderGroupMessages();}},1500);
+
+function init() {
+  renderFeed();
+  renderFriends();
+  renderConversations();
+  renderNotifications();
 }
-function openGroupSettings() {
-  if(!activeGroupChat)return; if(!activeGroupChat.members.some(m=>m.username==='@johndoe'&&m.isAdmin)){alert('Only admins');return;}
-  document.getElementById('settingsGroupName').value=activeGroupChat.name; document.getElementById('settingsGroupTag').value=activeGroupChat.tag;
-  document.getElementById('settingsGroupDesc').value=activeGroupChat.desc||''; document.getElementById('groupJoinLink').value=activeGroupChat.joinLink;
-  document.getElementById('adminOnlyPost').checked=activeGroupChat.adminOnlyPost;
-  document.getElementById('settingsMembersList').innerHTML=activeGroupChat.members.map((m,i)=>`<div class="flex items-center justify-between glass-light rounded-lg p-2"><div class="flex items-center gap-2"><div class="avatar-sm bg-gradient-to-br from-blue-500 to-purple-600 w-7 h-7 text-[10px] flex-shrink-0">${m.initials}</div><div><p class="text-sm text-white">${m.name} ${m.isAdmin?'<span class="verified-icon">A</span>':''}</p><p class="text-xs text-gray-400">${m.username}</p></div></div>${m.username!=='@johndoe'?`<div class="flex gap-1 flex-shrink-0"><button class="text-xs text-blue-400" onclick="toggleAdmin(${i})">${m.isAdmin?'Remove Admin':'Make Admin'}</button><button class="text-xs text-red-400" onclick="removeMember(${i})">Remove</button></div>`:'<span class="text-xs text-gray-500 flex-shrink-0">Owner</span>'}</div>`).join('');
-  navigateTo('group-settings');
-}
-function backToGroupChat() { if(activeGroupChat)openGroupChat(activeGroupChat.id); }
-function toggleAdmin(i) { if(activeGroupChat){activeGroupChat.members[i].isAdmin=!activeGroupChat.members[i].isAdmin;openGroupSettings();} }
-function removeMember(i) { if(activeGroupChat){activeGroupChat.members.splice(i,1);openGroupSettings();} }
-function addGroupMember() { const u=document.getElementById('addMemberInput').value.trim(); if(!u||!activeGroupChat)return; const n=u.replace('@',''); activeGroupChat.members.push({name:n,username:u.startsWith('@')?u:'@'+u,initials:n.substring(0,2).toUpperCase(),isAdmin:false}); document.getElementById('addMemberInput').value=''; openGroupSettings(); }
-function copyGroupLink() { const l=document.getElementById('groupJoinLink').value; navigator.clipboard.writeText(l).then(()=>alert('Copied!')).catch(()=>alert('Link: '+l)); }
-function saveGroupSettings() { if(!activeGroupChat)return; activeGroupChat.name=document.getElementById('settingsGroupName').value.trim(); activeGroupChat.tag=document.getElementById('settingsGroupTag').value.trim(); activeGroupChat.desc=document.getElementById('settingsGroupDesc').value.trim(); activeGroupChat.adminOnlyPost=document.getElementById('adminOnlyPost').checked; alert('Saved!'); openGroupChat(activeGroupChat.id); }function deleteGroup() { if(!activeGroupChat)return; if(confirm('Delete group?')){groups=groups.filter(g=>g.id!==activeGroupChat.id);activeGroupChat=null;renderGroups();navigateTo('groups');} }
-function handleAvatarUpload(input) { if(input.files&&input.files[0]){const r=new FileReader();r.onload=function(e){document.querySelectorAll('.bg-gradient-to-br.from-blue-500.to-purple-600').forEach(el=>{if(el.classList.contains('rounded-full')&&(el.textContent==='JD'||el.id==='profilePic')){el.style.backgroundImage='url('+e.target.result+')';el.style.backgroundSize='cover';el.textContent='';}});};r.readAsDataURL(input.files[0]);} }
-function saveProfile() { alert('Profile saved! ✅'); navigateTo('profile'); }
-function openCreatePost() { document.getElementById('createPostModal').style.display='flex'; document.getElementById('newPostContent').focus(); document.getElementById('createPostPreview').style.display='none'; document.getElementById('createPostPreview').innerHTML=''; document.getElementById('feelingPicker').style.display='none'; pendingMedia=null; pendingFeeling=''; }
-function closeCreatePost() { document.getElementById('createPostModal').style.display='none'; document.getElementById('createPostPreview').style.display='none'; document.getElementById('feelingPicker').style.display='none'; pendingMedia=null; pendingFeeling=''; }
-function previewPostMedia(input,type) { const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(e){const p=document.getElementById('createPostPreview'); p.style.display='block'; if(type==='image'){p.innerHTML=`<div class="relative"><img src="${e.target.result}" class="w-full rounded-xl" style="max-height:250px;object-fit:cover"><button class="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm" onclick="removePostMedia()">✕</button></div>`;}else{p.innerHTML=`<div class="relative"><video src="${e.target.result}" controls class="w-full rounded-xl" style="max-height:250px"></video><button class="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm" onclick="removePostMedia()">✕</button></div>`;} pendingMedia={type,url:e.target.result,name:f.name}; }; r.readAsDataURL(f); }
-function removePostMedia() { document.getElementById('createPostPreview').style.display='none'; document.getElementById('createPostPreview').innerHTML=''; document.getElementById('newPostImage').value=''; document.getElementById('newPostVideo').value=''; pendingMedia=null; }
-function openFeelingPicker() { const p=document.getElementById('feelingPicker'); p.style.display=p.style.display==='none'?'block':'none'; }
-function selectFeeling(f) { pendingFeeling=f; document.getElementById('feelingPicker').style.display='none'; const p=document.getElementById('createPostPreview'); if(p.style.display==='none'||!p.innerHTML){p.style.display='block';p.innerHTML=`<div class="glass-light rounded-lg p-3 flex items-center justify-between"><p class="text-sm text-blue-400">Feeling ${f}</p><button class="text-gray-400 hover:text-white" onclick="removeFeeling()">✕</button></div>`;}else{p.innerHTML+=`<div class="glass-light rounded-lg p-3 mt-2 flex items-center justify-between"><p class="text-sm text-blue-400">Feeling ${f}</p><button class="text-gray-400 hover:text-white" onclick="removeFeeling()">✕</button></div>`;} }
-function removeFeeling() { pendingFeeling=''; const p=document.getElementById('createPostPreview'); p.querySelectorAll('.glass-light').forEach(d=>{if(d.textContent.includes('Feeling'))d.remove();}); if(!p.innerHTML.trim())p.style.display='none'; }
-function publishPost() { const c=document.getElementById('newPostContent').value.trim(); if(!c&&!pendingMedia&&!pendingFeeling)return; posts.unshift({id:Date.now(),author:'John Doe',username:'@johndoe',initials:'JD',grad:'from-blue-500 to-purple-600',time:'Just now',content:c||(pendingFeeling?'Feeling '+pendingFeeling:''),likes:0,comments:[],shares:0,liked:false,shared:false,mediaType:pendingMedia?pendingMedia.type:null,mediaUrl:pendingMedia?pendingMedia.url:null,feeling:pendingFeeling||null}); renderFeed(); closeCreatePost(); document.getElementById('newPostContent').value=''; }
-function handleSignup() { const e=document.getElementById('signupEmail').value, p=document.getElementById('signupPassword').value; if(!e||!p){alert('Fill all fields');return;} document.getElementById('signupPage').style.display='none'; document.getElementById('mainApp').style.display='block'; init(); }
-function handleLogout() { document.getElementById('mainApp').style.display='none'; document.getElementById('signupPage').style.display='flex'; closeDropdown(); }
-document.getElementById('createPostModal').addEventListener('click', function(e) { if(e.target===this)closeCreatePost(); });
-document.getElementById('createGroupModal').addEventListener('click', function(e) { if(e.target===this)closeCreateGroup(); });
-window.addEventListener('load', function() { setTimeout(function() { document.getElementById('loadingScreen').classList.add('fade-out'); setTimeout(function() { document.getElementById('loadingScreen').style.display='none'; document.getElementById('signupPage').style.display='flex'; }, 500); }, 2000); });
+
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('signupPage').style.display = 'block';
+  }, 2000);
+});
 </script>
 </body>
 </html>
